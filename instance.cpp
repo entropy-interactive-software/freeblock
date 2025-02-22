@@ -26,7 +26,10 @@ Instance::~Instance() {
   setParent(NULL);
 }
 
-Instance* Instance::getParent() { return dataModel->getInstanceByUUID(parent); }
+Instance* Instance::getParent() {
+  if (parent == "nil") return NULL;
+  return dataModel->getInstanceByUUID(parent);
+}
 
 Instance* Instance::findFirstChildOfType(const char* type) {
   for (auto child : getChildren()) {
@@ -52,6 +55,7 @@ void Instance::setParent(Instance* instance) {
     instance->childAdding.fire(instance, this);
     instance->children.push_back(uuid);
     parent = instance;
+    this->parent = parent->getUUID();
     instance->childAdded.fire(instance, this);
   }
 }

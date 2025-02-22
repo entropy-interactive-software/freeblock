@@ -1,4 +1,7 @@
 #include "block.hpp"
 namespace freeblock {
-INSTANCE_CTOR(BlockInstance, PVInstance) { size = glm::vec3(2, 1, 4); }
+INSTANCE_CTOR(BlockInstance, PVInstance) {
+  size = glm::vec3(2, 1, 4);
+  shape = BlockInstance::Cuboid;
+}
 };  // namespace freeblock

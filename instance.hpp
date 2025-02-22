@@ -18,7 +18,7 @@ namespace freeblock {
       return Instance::isA<Super>(instance);              \
     }                                                     \
   }                                                       \
-  virtual bool isA(const char* type) {                    \
+  virtual bool isA(const char* type) const {              \
     if (getClassName() == type) {                         \
       return true;                                        \
     } else {                                              \
@@ -33,6 +33,7 @@ class Instance {
   DataModel* dataModel;
   InstanceUUID parent;
   std::vector<InstanceUUID> children;
+  std::string name;
   InstanceUUID uuid;
 
  public:
@@ -93,6 +94,7 @@ class Instance {
   Instance* getParent();
   DataModel* getDM() { return dataModel; }
   std::vector<Instance*> getChildren();
+  std::string getName() { return name; }
 
   template <typename T>
   T* getService() {

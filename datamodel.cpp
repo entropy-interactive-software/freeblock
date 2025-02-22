@@ -6,7 +6,10 @@
 #include "instance.hpp"
 #include "script_context.hpp"
 namespace freeblock {
-DataModel::DataModel() { root = new Instance(this); }
+DataModel::DataModel(rdm::World* world) {
+  this->world = world;
+  root = new Instance(this);
+}
 
 DataModel::~DataModel() { delete root; }
 
