@@ -17,6 +17,8 @@ class BlockInstance : public PVInstance {
     Cylinder,
   };
 
+  void setSize(glm::vec3 s) { size = s; }
+
   glm::vec3 getSize() { return size; }
   Shape getShape() { return shape; }
   BlockColor getColor() { return color; }

@@ -12,5 +12,8 @@ class PVInstance : public Instance {
  public:
   glm::vec3 getPosition() { return position; }
   glm::mat3 getBasis() { return basis; }
+
+  void setPosition(glm::vec3 v) { position = v; }
+  void setBasis(glm::mat3 m) { basis = m; }
 };
 }  // namespace freeblock

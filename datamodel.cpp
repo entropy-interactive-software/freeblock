@@ -9,13 +9,23 @@ namespace freeblock {
 DataModel::DataModel(rdm::World* world) {
   this->world = world;
   root = new Instance(this);
+
+  loadLegacyMap("map.rbxl");
 }
 
 DataModel::~DataModel() { delete root; }
 
+bool DataModel::isServer() {
+  return getWorld()->getNetworkManager()->isBackend();
+}
+
+bool DataModel::isClient() {
+  return !getWorld()->getNetworkManager()->isBackend();
+}
+
 // STOLEN FROM https://stackoverflow.com/a/60198074
 static std::random_device rd;
-static std::mt19937 gen(rd());
+static std::mt19937_64 gen(rd());
 static std::uniform_int_distribution<> dis(0, 15);
 static std::uniform_int_distribution<> dis2(8, 11);
 

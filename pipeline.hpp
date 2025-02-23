@@ -15,9 +15,11 @@ class Pipeline {
 
   struct Cluster {
     bool dirty;
+    bool isSoul;
     std::unique_ptr<rdm::gfx::BaseBuffer> vertexBuffer;
     std::unique_ptr<rdm::gfx::BaseBuffer> elementBuffer;
     std::unique_ptr<rdm::gfx::BaseArrayPointers> arrayPointers;
+    InstanceUUID modelUuid;
     size_t count;
   };
 

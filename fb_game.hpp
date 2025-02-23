@@ -7,8 +7,11 @@ namespace freeblock {
 class Game : public rdm::Game {
   std::unique_ptr<Pipeline> renderPipeline;
 
+  DataModel* createDM(rdm::World* world);
+
  public:
   virtual void initialize();
   virtual void initializeClient();
+  virtual void initializeServer();
 };
 };  // namespace freeblock

@@ -20,9 +20,19 @@ class DataModel {
   DataModel(rdm::World* world);
   ~DataModel();
 
+  bool isServer();
+  bool isClient();
+
+  void loadLegacyMap(const char* path);
+
   rdm::World* getWorld() { return world; }
 
   Instance* getInstanceByUUID(InstanceUUID uuid);
+  template <typename T>
+  T* getInstanceByUUID(InstanceUUID uuid) {
+    return dynamic_cast<T*>(getInstanceByUUID(uuid));
+  }
+
   InstanceUUID newInstance(Instance* instance);
   Instance* getRoot() { return root; }
 };

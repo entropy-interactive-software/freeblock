@@ -4,33 +4,32 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
-namespace freeblock {
-class Instance;
-};
 
 namespace freeblock::reflection {
+class Described {
+ public:
+};
+
+class Property {
+ public:
+};
 
 class Reflection {
   friend class PropDesc;
-  struct PDesc {
-    std::string name;
-  };
 
-  std::map<std::type_info, std::map<std::string, PDesc>> propDescs;
-
-  void addPropDesc(std::type_info, PDesc d);
+  std::map<std::type_info, std::map<std::string, Property>> propertyMap;
+  void addProperty(std::type_info, Property p);
 
  public:
   static Reflection* singleton();
-};
 
-class PropDesc {
- public:
-  template <typename T, typename V>
-  PropDesc(const char* name, std::function<V()> getter,
-           std::function<void(V)> setter) {
-    static_assert(std::is_base_of<Instance, T>::value,
-                  "T must inherit from Instance");
+  template <typename T>
+  static std::map<std::string, Property> getDesc() {
+    Reflection* t = singleton();
+    auto it = t->propertyMap.find(typeid(T));
+    if (it != t->propertyMap.end()) {
+      return it->second;
+    }
   }
 };
 };  // namespace freeblock::reflection

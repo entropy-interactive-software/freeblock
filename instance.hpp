@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "datamodel.hpp"
+#include "reflection.hpp"
 namespace freeblock {
 #define INSTANCE(N, P)                                    \
  public:                                                  \
@@ -29,7 +30,7 @@ namespace freeblock {
                                                           \
  private:
 #define INSTANCE_CTOR(N, P) N::N(DataModel* dm) : P(dm)
-class Instance {
+class Instance : public reflection::Described {
   DataModel* dataModel;
   InstanceUUID parent;
   std::vector<InstanceUUID> children;
