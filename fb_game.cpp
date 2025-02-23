@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/trigonometric.hpp>
 
+#include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "block.hpp"
 #include "datamodel.hpp"
 #include "input.hpp"
@@ -21,6 +22,7 @@ namespace freeblock {
 void Game::initialize() {
   rdm::WorldConstructorSettings& settings = getWorldConstructorSettings();
   settings.network = true;
+  settings.physics = true;
 
   startClient();
 }
@@ -36,7 +38,8 @@ void Game::initializeServer() { createDM(getServerWorld()); }
 void Game::initializeClient() {
   DataModel* dm = createDM(getWorld());
 
-  r = glm::mat4(1);
+  r1 = glm::mat4(1);
+  r2 = glm::mat4(1);
 
   renderPipeline.reset(new Pipeline(getGfxEngine(), dm));
 
@@ -50,31 +53,32 @@ void Game::initializeClient() {
         ModelInstance* model = dynamic_cast<ModelInstance*>(soul->getParent());
         if (model) {
           BlockInstance* head =
-              dynamic_cast<BlockInstance*>(model->findFirstChildOfName("Head"));
+              dynamic_cast<BlockInstance*>(model->findFirstChildOfName("Body"));
           if (head) {
             cam.setTarget(head->getPosition());
 
             if (rdm::Input::singleton()->isMouseButtonDown(3)) {
               glm::vec2 delta = rdm::Input::singleton()->getMouseDelta();
               if (delta.x < 0.f) {
-                r = glm::rotate(r, glm::radians(-abs(delta.x)),
-                                glm::vec3(0, 1, 0));
+                r1 = glm::rotate(r1, glm::radians(-abs(delta.x)),
+                                 glm::vec3(0, 1, 0));
               } else if (delta.x > 0.f) {
-                r = glm::rotate(r, glm::radians(abs(delta.x)),
-                                glm::vec3(0, 1, 0));
+                r1 = glm::rotate(r1, glm::radians(abs(delta.x)),
+                                 glm::vec3(0, 1, 0));
               }
 
               if (delta.y > 0.f) {
-                r = glm::rotate(r, glm::radians(abs(delta.y)),
-                                glm::vec3(1, 0, 0));
+                r2 = glm::rotate(r2, glm::radians(abs(delta.y)),
+                                 glm::vec3(1, 0, 0));
               } else if (delta.y < 0.f) {
-                r = glm::rotate(r, glm::radians(-abs(delta.y)),
-                                glm::vec3(1, 0, 0));
+                r2 = glm::rotate(r2, glm::radians(-abs(delta.y)),
+                                 glm::vec3(1, 0, 0));
               }
             }
 
-            cam.setPosition((glm::mat3(r) * glm::vec3(5, 5, 5)) +
-                            head->getPosition());
+            cam.setPosition(
+                (glm::mat3(r1) * glm::mat3(r2) * glm::vec3(0, 0, 5)) +
+                head->getPosition());
           }
         }
       }
@@ -82,6 +86,22 @@ void Game::initializeClient() {
       cam.setTarget(glm::vec3(0, 0, 0));
       cam.setPosition(glm::vec3(sinf(getGfxEngine()->getTime()) * 200.f, 200,
                                 cosf(getGfxEngine()->getTime()) * 200.f));
+    }
+  });
+
+  getWorld()->stepped.listen([this, dm] {
+    if (PlayerInstance* player =
+            dm->getRoot()->getService<PlayersService>()->getLocalPlayer()) {
+      if (SoulInstance* soul = player->getCharacter()) {
+        ModelInstance* model = dynamic_cast<ModelInstance*>(soul->getParent());
+        if (model) {
+          BlockInstance* head =
+              dynamic_cast<BlockInstance*>(model->findFirstChildOfName("Body"));
+          btRigidBody* body = head->getRigidBody();
+          body->setAngularFactor(btVector3(0, 0, 1));
+          body->setLinearFactor(btVector3(0, 0, 0));
+        }
+      }
     }
   });
 

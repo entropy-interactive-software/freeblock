@@ -48,11 +48,18 @@ void Pipeline::model(ModelInstance* model) {
         rdm::gfx::DtFloat, 2, 3, sizeof(Vertex), (void*)offsetof(Vertex, color),
         cluster.vertexBuffer.get()));
     cluster.modelUuid = INSTANCE_TOUUID(model);
+    cluster.trackedBlocks = 0;
 
     cluster.dirty = true;
   }
 
   Cluster& cluster = clusters[model->getUUID()];
+
+  if (model->getDirty()) {
+    cluster.dirty = true;
+    model->setDirty(false);
+  }
+
   std::vector<BlockInstance*> blocks;
   for (auto child : model->getChildren()) {
     if (ModelInstance* _model = dynamic_cast<ModelInstance*>(child)) {
@@ -62,11 +69,6 @@ void Pipeline::model(ModelInstance* model) {
         blocks.push_back(block);
       }
     }
-  }
-
-  if (model->getDirty()) {
-    cluster.dirty = true;
-    model->setDirty(false);
   }
 
   // GEOMETRY GENERATION
@@ -89,13 +91,17 @@ void Pipeline::model(ModelInstance* model) {
       cluster.primaryPV = primaryBlock->getUUID();
     }
 
+    bool pushElements = false;
+    if (cluster.trackedBlocks != blocks.size()) pushElements = true;
+    cluster.trackedBlocks = blocks.size();
+
     std::vector<Vertex> vertices;
     std::vector<unsigned int> elements;
     for (auto block : blocks) {
       glm::vec3 brickColor = Palette::blockColorToColor(block->getColor());
       glm::vec3 brickSize = block->getSize();
       glm::vec3 brickPosition = block->getPosition() - basePosition;
-      glm::mat3 brickBasis = block->getBasis() / baseBasis;
+      glm::mat3 brickBasis = glm::inverse(block->getBasis());
       switch (block->getShape()) {
         default:
         case BlockInstance::Cuboid:
@@ -120,13 +126,15 @@ void Pipeline::model(ModelInstance* model) {
                            brickPosition,
                        brickColor, glm::vec3(1, 0, 0) * brickBasis));
 
-            elements.push_back(index + 0);
-            elements.push_back(index + 1);
-            elements.push_back(index + 2);
+            if (pushElements) {
+              elements.push_back(index + 0);
+              elements.push_back(index + 1);
+              elements.push_back(index + 2);
 
-            elements.push_back(index + 2);
-            elements.push_back(index + 1);
-            elements.push_back(index + 3);
+              elements.push_back(index + 2);
+              elements.push_back(index + 1);
+              elements.push_back(index + 3);
+            }
           }
           // left face
           {
@@ -149,13 +157,15 @@ void Pipeline::model(ModelInstance* model) {
                            brickPosition,
                        brickColor, glm::vec3(-1, 0, 0) * brickBasis));
 
-            elements.push_back(index + 0);
-            elements.push_back(index + 1);
-            elements.push_back(index + 2);
+            if (pushElements) {
+              elements.push_back(index + 0);
+              elements.push_back(index + 1);
+              elements.push_back(index + 2);
 
-            elements.push_back(index + 2);
-            elements.push_back(index + 1);
-            elements.push_back(index + 3);
+              elements.push_back(index + 2);
+              elements.push_back(index + 1);
+              elements.push_back(index + 3);
+            }
           }
           // top face
           {
@@ -178,13 +188,15 @@ void Pipeline::model(ModelInstance* model) {
                            brickPosition,
                        brickColor, glm::vec3(0, 1, 0) * brickBasis));
 
-            elements.push_back(index + 0);
-            elements.push_back(index + 1);
-            elements.push_back(index + 2);
+            if (pushElements) {
+              elements.push_back(index + 0);
+              elements.push_back(index + 1);
+              elements.push_back(index + 2);
 
-            elements.push_back(index + 2);
-            elements.push_back(index + 1);
-            elements.push_back(index + 3);
+              elements.push_back(index + 2);
+              elements.push_back(index + 1);
+              elements.push_back(index + 3);
+            }
           }
           // bottom face
           {
@@ -207,13 +219,15 @@ void Pipeline::model(ModelInstance* model) {
                            brickPosition,
                        brickColor, glm::vec3(0, -1, 0) * brickBasis));
 
-            elements.push_back(index + 0);
-            elements.push_back(index + 1);
-            elements.push_back(index + 2);
+            if (pushElements) {
+              elements.push_back(index + 0);
+              elements.push_back(index + 1);
+              elements.push_back(index + 2);
 
-            elements.push_back(index + 2);
-            elements.push_back(index + 1);
-            elements.push_back(index + 3);
+              elements.push_back(index + 2);
+              elements.push_back(index + 1);
+              elements.push_back(index + 3);
+            }
           }
           // front face
           {
@@ -236,13 +250,15 @@ void Pipeline::model(ModelInstance* model) {
                            brickPosition,
                        brickColor, glm::vec3(0, 0, 1) * brickBasis));
 
-            elements.push_back(index + 0);
-            elements.push_back(index + 1);
-            elements.push_back(index + 2);
+            if (pushElements) {
+              elements.push_back(index + 0);
+              elements.push_back(index + 1);
+              elements.push_back(index + 2);
 
-            elements.push_back(index + 2);
-            elements.push_back(index + 1);
-            elements.push_back(index + 3);
+              elements.push_back(index + 2);
+              elements.push_back(index + 1);
+              elements.push_back(index + 3);
+            }
           }
           // back face
           {
@@ -265,13 +281,15 @@ void Pipeline::model(ModelInstance* model) {
                            brickPosition,
                        brickColor, glm::vec3(0, 0, -1)));
 
-            elements.push_back(index + 0);
-            elements.push_back(index + 1);
-            elements.push_back(index + 2);
+            if (pushElements) {
+              elements.push_back(index + 0);
+              elements.push_back(index + 1);
+              elements.push_back(index + 2);
 
-            elements.push_back(index + 2);
-            elements.push_back(index + 1);
-            elements.push_back(index + 3);
+              elements.push_back(index + 2);
+              elements.push_back(index + 1);
+              elements.push_back(index + 3);
+            }
           }
           break;
       }
@@ -280,17 +298,19 @@ void Pipeline::model(ModelInstance* model) {
     cluster.vertexBuffer->upload(
         rdm::gfx::BaseBuffer::Array, rdm::gfx::BaseBuffer::DynamicDraw,
         sizeof(Vertex) * vertices.size(), vertices.data());
-    cluster.elementBuffer->upload(
-        rdm::gfx::BaseBuffer::Element, rdm::gfx::BaseBuffer::StaticDraw,
-        sizeof(unsigned int) * elements.size(), elements.data());
-    cluster.arrayPointers->upload();
-    cluster.count = elements.size();
-    cluster.dirty = false;
+    if (pushElements) {
+      cluster.elementBuffer->upload(
+          rdm::gfx::BaseBuffer::Element, rdm::gfx::BaseBuffer::StaticDraw,
+          sizeof(unsigned int) * elements.size(), elements.data());
+      cluster.count = elements.size();
 
-    rdm::Log::printf(rdm::LOG_DEBUG,
-                     "Generated mesh for UUID %s (%i elem, %ib)",
-                     model->getUUID().c_str(), cluster.count,
-                     sizeof(Vertex) * vertices.size());
+      rdm::Log::printf(rdm::LOG_DEBUG,
+                       "Generated mesh for UUID %s (%i elem, %ib)",
+                       model->getUUID().c_str(), cluster.count,
+                       sizeof(Vertex) * vertices.size());
+    }
+    cluster.arrayPointers->upload();
+    cluster.dirty = false;
   }
 }
 
@@ -314,7 +334,7 @@ void Pipeline::render() {
     glm::mat4 model = glm::mat4(1);
     if (PVInstance* pv =
             dataModel->getInstanceByUUID<PVInstance>(cluster.primaryPV)) {
-      model *= glm::mat4(pv->getBasis());
+      // model *= glm::mat4(pv->getBasis());
       model = glm::translate(model, pv->getPosition());
     }
     command.setModel(model);

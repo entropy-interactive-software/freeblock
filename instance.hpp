@@ -93,6 +93,8 @@ class Instance : public reflection::Described {
     }
   }
 
+  bool isDescendantOf(Instance* instance);
+
   InstanceUUID getUUID() { return uuid; }
   Instance* getParent();
   DataModel* getDM() { return dataModel; }

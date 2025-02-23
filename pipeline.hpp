@@ -22,6 +22,7 @@ class Pipeline {
     InstanceUUID modelUuid;
     InstanceUUID primaryPV;
     size_t count;
+    size_t trackedBlocks;
   };
 
   std::unordered_map<InstanceUUID, Cluster> clusters;

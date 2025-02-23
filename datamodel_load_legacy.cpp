@@ -4,9 +4,13 @@
 #include "block.hpp"
 #include "datamodel.hpp"
 #include "instance.hpp"
+#include "joint.hpp"
 #include "model.hpp"
+#include "settings.hpp"
 #include "workspace.hpp"
 namespace freeblock {
+static rdm::CVar dm_anchorpartslegacy("dm_anchorpartslegacy", "1", CVARF_SAVE);
+
 static void parseNode(DataModel *dm, Instance *instance,
                       rapidxml::xml_node<> *node) {
   if (strcmp(node->name(), "Item") == 0) {
@@ -59,9 +63,17 @@ static void parseNode(DataModel *dm, Instance *instance,
           v.z = std::atof(prop->first_node("Z")->value());
 
           block->setSize(v);
+        } else if (pname == std::string("Anchored")) {
+          if (!dm_anchorpartslegacy.getBool()) {
+            bool s = prop->value() == std::string("true");
+            block->setAnchored(s);
+          }
         }
       }
+      block->physicsInit();
     }
+  }
+  if (ModelInstance *model = dynamic_cast<ModelInstance *>(instance)) {
   }
 }
 
@@ -75,5 +87,10 @@ void DataModel::loadLegacyMap(const char *path) {
        node = node->next_sibling()) {
     parseNode(this, getRoot(), node);
   }
+
+  // JointService *joints = getRoot()->getService<JointService>();
+  // joints->buildJoints(getRoot()->getService<WorkspaceInstance>());
+
+  rdm::Log::printf(rdm::LOG_INFO, "Loaded map %s", path);
 }
 }  // namespace freeblock

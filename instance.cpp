@@ -69,6 +69,15 @@ void Instance::setParent(Instance* instance) {
   }
 }
 
+bool Instance::isDescendantOf(Instance* instance) {
+  Instance* parent = getParent();
+  while (parent != instance) {
+    if (parent == NULL) return false;
+    parent = parent->getParent();
+  }
+  return true;
+}
+
 std::vector<Instance*> Instance::getChildren() {
   std::vector<Instance*> instances;
   for (auto uuid : children) {
