@@ -1,5 +1,8 @@
 #include "pipeline.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "block.hpp"
 #include "model.hpp"
 #include "palette.hpp"
@@ -44,6 +47,7 @@ void Pipeline::model(ModelInstance* model) {
     cluster.arrayPointers->addAttrib(rdm::gfx::BaseArrayPointers::Attrib(
         rdm::gfx::DtFloat, 2, 3, sizeof(Vertex), (void*)offsetof(Vertex, color),
         cluster.vertexBuffer.get()));
+    cluster.modelUuid = INSTANCE_TOUUID(model);
 
     cluster.dirty = true;
   }
@@ -68,13 +72,21 @@ void Pipeline::model(ModelInstance* model) {
   // GEOMETRY GENERATION
   if (cluster.dirty) {
     {
-      ModelInstance* model =
-          dataModel->getInstanceByUUID<ModelInstance>(cluster.modelUuid);
       SoulInstance* soul = model->findFirstChildOfType<SoulInstance>();
-      if (soul)
-        cluster.isSoul = true;
-      else
-        cluster.isSoul = false;
+      cluster.isSoul = soul ? true : false;
+    }
+
+    PVInstance* primaryBlock = model->getPrimaryBlock();
+    if (!primaryBlock && blocks.size()) {
+      primaryBlock = model->findFirstChildOfType<PVInstance>();
+    }
+
+    glm::vec3 basePosition = glm::vec3(0.0);
+    glm::mat3 baseBasis = glm::mat3(1.0);
+    if (primaryBlock) {
+      basePosition = primaryBlock->getPosition();
+      baseBasis = primaryBlock->getBasis();
+      cluster.primaryPV = primaryBlock->getUUID();
     }
 
     std::vector<Vertex> vertices;
@@ -82,8 +94,8 @@ void Pipeline::model(ModelInstance* model) {
     for (auto block : blocks) {
       glm::vec3 brickColor = Palette::blockColorToColor(block->getColor());
       glm::vec3 brickSize = block->getSize();
-      glm::vec3 brickPosition = block->getPosition();
-      glm::mat3 brickBasis = block->getBasis();
+      glm::vec3 brickPosition = block->getPosition() - basePosition;
+      glm::mat3 brickBasis = block->getBasis() / baseBasis;
       switch (block->getShape()) {
         default:
         case BlockInstance::Cuboid:
@@ -287,7 +299,7 @@ void Pipeline::render() {
       dataModel->getRoot()->getService<WorkspaceInstance>();
   model(workspace);
 
-  auto mt = engine->getMaterialCache()->getOrLoad("Mesh").value();
+  auto mt = engine->getMaterialCache()->getOrLoad("Cluster").value();
   rdm::gfx::BaseProgram* bp = mt->prepareDevice(engine->getDevice(), 0);
   rdm::gfx::RenderListSettings settings;
   settings.cull = rdm::gfx::BaseDevice::None;
@@ -299,6 +311,13 @@ void Pipeline::render() {
     rdm::gfx::RenderCommand command(rdm::gfx::BaseDevice::Triangles,
                                     cluster.elementBuffer.get(), cluster.count,
                                     cluster.arrayPointers.get());
+    glm::mat4 model = glm::mat4(1);
+    if (PVInstance* pv =
+            dataModel->getInstanceByUUID<PVInstance>(cluster.primaryPV)) {
+      model *= glm::mat4(pv->getBasis());
+      model = glm::translate(model, pv->getPosition());
+    }
+    command.setModel(model);
     list.add(command);
   }
   engine->pass(rdm::gfx::RenderPass::Opaque).add(list);

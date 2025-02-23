@@ -9,6 +9,8 @@ class Game : public rdm::Game {
 
   DataModel* createDM(rdm::World* world);
 
+  glm::mat4 r;
+
  public:
   virtual void initialize();
   virtual void initializeClient();

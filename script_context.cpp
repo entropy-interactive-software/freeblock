@@ -8,6 +8,7 @@ extern "C" {
 #include "lua/lua.h"
 };
 
+#include "console.hpp"
 #include "script.hpp"
 namespace freeblock {
 INSTANCE_CTOR(ScriptContext, Service) {}

@@ -11,7 +11,7 @@ static glm::vec3 palette[] = {
 };
 
 glm::vec3 Palette::blockColorToColor(BlockColor color) {
-  return palette[color];
+  return palette[color] / glm::vec3(255, 255, 255);
 };
 
 BlockColor Palette::colorToBlockColor(glm::vec3 color) {

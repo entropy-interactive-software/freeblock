@@ -20,6 +20,7 @@ class Pipeline {
     std::unique_ptr<rdm::gfx::BaseBuffer> elementBuffer;
     std::unique_ptr<rdm::gfx::BaseArrayPointers> arrayPointers;
     InstanceUUID modelUuid;
+    InstanceUUID primaryPV;
     size_t count;
   };
 

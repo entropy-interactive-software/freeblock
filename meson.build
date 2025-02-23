@@ -98,6 +98,12 @@ base = static_library('base',
                       'pvinstance.hpp',
 		      'palette.cpp',
 		      'palette.hpp',
+                      'players.cpp',
+                      'players.hpp',
+                      'player.cpp',
+                      'player.hpp',
+                      'soul.cpp',
+                      'soul.hpp',
                       dependencies: rdm4001_dep, link_with: lua
                      )
 

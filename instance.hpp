@@ -6,6 +6,7 @@
 #include "datamodel.hpp"
 #include "reflection.hpp"
 namespace freeblock {
+#define INSTANCE_TOUUID(I) (I ? I->getUUID() : "nil")
 #define INSTANCE(N, P)                                    \
  public:                                                  \
   typedef P Super;                                        \
@@ -68,6 +69,7 @@ class Instance : public reflection::Described {
   };
 
   Instance* findFirstChildOfType(const char* type);
+  Instance* findFirstChildOfName(const char* name);
 
   template <typename T>
   T* findFirstChildOfType() {
@@ -96,6 +98,7 @@ class Instance : public reflection::Described {
   DataModel* getDM() { return dataModel; }
   std::vector<Instance*> getChildren();
   std::string getName() { return name; }
+  void setName(std::string name) { this->name = name; }
 
   template <typename T>
   T* getService() {

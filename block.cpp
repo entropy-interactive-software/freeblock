@@ -3,6 +3,6 @@ namespace freeblock {
 INSTANCE_CTOR(BlockInstance, PVInstance) {
   size = glm::vec3(2, 1, 4);
   shape = BlockInstance::Cuboid;
-  color = 0;
+  color = rand() % 3;
 }
 };  // namespace freeblock

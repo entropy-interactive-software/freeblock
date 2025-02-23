@@ -40,6 +40,15 @@ Instance* Instance::findFirstChildOfType(const char* type) {
   return NULL;
 }
 
+Instance* Instance::findFirstChildOfName(const char* name) {
+  for (auto child : getChildren()) {
+    if (child->getName() == name) {
+      return child;
+    }
+  }
+  return NULL;
+}
+
 void Instance::setParent(Instance* instance) {
   Instance* parent = dataModel->getInstanceByUUID(this->parent);
   if (parent) {
