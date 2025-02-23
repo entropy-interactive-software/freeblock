@@ -42,7 +42,6 @@ void Pipeline::model(ModelInstance* model) {
     cluster.arrayPointers->addAttrib(rdm::gfx::BaseArrayPointers::Attrib(
         rdm::gfx::DtFloat, 2, 3, sizeof(Vertex), (void*)offsetof(Vertex, color),
         cluster.vertexBuffer.get()));
-    cluster.arrayPointers->upload();
 
     cluster.dirty = true;
   }
@@ -100,6 +99,151 @@ void Pipeline::model(ModelInstance* model) {
             elements.push_back(index + 1);
             elements.push_back(index + 3);
           }
+          // left face
+          {
+            int index = vertices.size();
+
+            vertices.push_back(Vertex(
+                ((brickSize * glm::vec3(-0.5, -0.5, -0.5)) * brickBasis) +
+                    brickPosition,
+                brickColor, glm::vec3(-1, 0, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, 0.5, -0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(-1, 0, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, -0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(-1, 0, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, 0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(-1, 0, 0)));
+
+            elements.push_back(index + 0);
+            elements.push_back(index + 1);
+            elements.push_back(index + 2);
+
+            elements.push_back(index + 2);
+            elements.push_back(index + 1);
+            elements.push_back(index + 3);
+          }
+          // top face
+          {
+            int index = vertices.size();
+
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, 0.5, -0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 1, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, 0.5, -0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 1, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, 0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 1, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, 0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 1, 0)));
+
+            elements.push_back(index + 0);
+            elements.push_back(index + 1);
+            elements.push_back(index + 2);
+
+            elements.push_back(index + 2);
+            elements.push_back(index + 1);
+            elements.push_back(index + 3);
+          }
+          // bottom face
+          {
+            int index = vertices.size();
+
+            vertices.push_back(Vertex(
+                ((brickSize * glm::vec3(-0.5, -0.5, -0.5)) * brickBasis) +
+                    brickPosition,
+                brickColor, glm::vec3(0, -1, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, -0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, -1, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, -0.5, -0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, -1, 0)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, -0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, -1, 0)));
+
+            elements.push_back(index + 0);
+            elements.push_back(index + 1);
+            elements.push_back(index + 2);
+
+            elements.push_back(index + 2);
+            elements.push_back(index + 1);
+            elements.push_back(index + 3);
+          }
+          // front face
+          {
+            int index = vertices.size();
+
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, -0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 0, 1)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, -0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 0, 1)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, 0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 0, 1)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, 0.5, 0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 0, 1)));
+
+            elements.push_back(index + 0);
+            elements.push_back(index + 1);
+            elements.push_back(index + 2);
+
+            elements.push_back(index + 2);
+            elements.push_back(index + 1);
+            elements.push_back(index + 3);
+          }
+          // back face
+          {
+            int index = vertices.size();
+
+            vertices.push_back(Vertex(
+                ((brickSize * glm::vec3(-0.5, -0.5, -0.5)) * brickBasis) +
+                    brickPosition,
+                brickColor, glm::vec3(0, 0, -1)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, -0.5, -0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 0, -1)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(-0.5, 0.5, -0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 0, -1)));
+            vertices.push_back(
+                Vertex(((brickSize * glm::vec3(0.5, 0.5, -0.5)) * brickBasis) +
+                           brickPosition,
+                       brickColor, glm::vec3(0, 0, -1)));
+
+            elements.push_back(index + 0);
+            elements.push_back(index + 1);
+            elements.push_back(index + 2);
+
+            elements.push_back(index + 2);
+            elements.push_back(index + 1);
+            elements.push_back(index + 3);
+          }
           break;
       }
     }
@@ -110,6 +254,7 @@ void Pipeline::model(ModelInstance* model) {
     cluster.elementBuffer->upload(
         rdm::gfx::BaseBuffer::Element, rdm::gfx::BaseBuffer::StaticDraw,
         sizeof(unsigned int) * elements.size(), elements.data());
+    cluster.arrayPointers->upload();
     cluster.count = elements.size();
     cluster.dirty = false;
 
