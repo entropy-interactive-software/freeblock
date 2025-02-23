@@ -2,6 +2,7 @@
 
 #include "block.hpp"
 #include "model.hpp"
+#include "palette.hpp"
 #include "workspace.hpp"
 
 namespace freeblock {
@@ -63,7 +64,7 @@ void Pipeline::model(ModelInstance* model) {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> elements;
     for (auto block : blocks) {
-      glm::vec3 brickColor = glm::vec3(0.7);
+      glm::vec3 brickColor = Palette::blockColorToColor(block->getColor());
       glm::vec3 brickSize = block->getSize();
       glm::vec3 brickPosition = block->getPosition();
       glm::mat3 brickBasis = block->getBasis();

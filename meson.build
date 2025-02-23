@@ -95,6 +95,8 @@ base = static_library('base',
                       'pipeline.hpp',
                       'pvinstance.cpp',
                       'pvinstance.hpp',
+		      'palette.cpp',
+		      'palette.hpp',
                       dependencies: rdm4001_dep, link_with: lua
                      )
 
