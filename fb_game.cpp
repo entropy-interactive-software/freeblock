@@ -77,7 +77,7 @@ void Game::initializeClient() {
             }
 
             cam.setPosition(
-                (glm::mat3(r1) * glm::mat3(r2) * glm::vec3(0, 0, 5)) +
+                (glm::mat3(r1) * glm::mat3(r2) * glm::vec3(0, 0, 100)) +
                 head->getPosition());
           }
         }
