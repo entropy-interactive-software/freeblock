@@ -26,6 +26,7 @@ class Pipeline {
   };
 
   std::unordered_map<InstanceUUID, Cluster> clusters;
+  std::vector<InstanceUUID> meshesToRender;
   void model(ModelInstance* model);
 
  public:

@@ -3,6 +3,7 @@
 #include "block.hpp"
 #include "instance.hpp"
 #include "joint.hpp"
+#include "mesh.hpp"
 #include "model.hpp"
 #include "soul.hpp"
 #include "workspace.hpp"
@@ -23,9 +24,11 @@ void PlayerInstance::spawnCharacter() {
   block->setSize(glm::vec3(4, 6, 1));
   block->setAnchored(false);
 
+  MeshInstance* mesh = block->createChild<MeshInstance>();
+  mesh->setMeshPath("content/meshes/playermodel.obj");
+
   playerModel->setPrimaryBlock(block);
 
-  JointService* joints = getService<JointService>();
   playerModel->moveTo(glm::vec3(10, 10, 30));
 }
 }  // namespace freeblock

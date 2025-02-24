@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "block.hpp"
+#include "mesh.hpp"
 #include "model.hpp"
 #include "palette.hpp"
 #include "soul.hpp"
@@ -65,6 +66,10 @@ void Pipeline::model(ModelInstance* model) {
     if (ModelInstance* _model = dynamic_cast<ModelInstance*>(child)) {
       this->model(_model);
     } else if (BlockInstance* block = dynamic_cast<BlockInstance*>(child)) {
+      if (block->findFirstChildOfType<MeshInstance>()) {
+        meshesToRender.push_back(INSTANCE_TOUUID(block));
+        continue;
+      }
       if (cluster.dirty) {
         blocks.push_back(block);
       }
@@ -341,5 +346,26 @@ void Pipeline::render() {
     list.add(command);
   }
   engine->pass(rdm::gfx::RenderPass::Opaque).add(list);
+
+  std::shared_ptr<rdm::gfx::Material> material =
+      engine->getMaterialCache()->getOrLoad("Mesh").value();
+  rdm::gfx::BaseProgram* program =
+      material->prepareDevice(engine->getDevice(), 0);
+  for (auto uuid : meshesToRender) {
+    BlockInstance* block = dataModel->getInstanceByUUID<BlockInstance>(uuid);
+    MeshInstance* mesh = block->findFirstChildOfType<MeshInstance>();
+    if (mesh) {
+      glm::mat4 model(1);
+      model *= glm::mat4(block->getBasis());
+      model = glm::translate(model, block->getPosition());
+      program->setParameter(
+          "model", rdm::gfx::DtMat4,
+          rdm::gfx::BaseProgram::Parameter{.matrix4x4 = model});
+      rdm::gfx::Model* _model =
+          engine->getMeshCache()->get(mesh->getMeshPath().c_str()).value();
+      _model->render(engine->getDevice());
+    }
+  }
+  meshesToRender.clear();
 }
 }  // namespace freeblock

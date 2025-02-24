@@ -8,6 +8,7 @@ Instance::Instance(DataModel* dataModel) {
   uuid = dataModel->newInstance(this);
 
   parent = "nil";
+  name = "Instance";
 }
 
 Instance::~Instance() {
