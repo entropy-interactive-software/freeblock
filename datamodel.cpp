@@ -6,6 +6,7 @@
 #include "instance.hpp"
 #include "runservice.hpp"
 #include "script_context.hpp"
+#include "workspace.hpp"
 namespace freeblock {
 DataModel::DataModel(rdm::World* world) {
   this->world = world;
@@ -14,7 +15,9 @@ DataModel::DataModel(rdm::World* world) {
   RunService* run = root->getService<RunService>();
   run->stop();
 
-  loadLegacyMap("map.rbxl");
+  // loadLegacyMap("map.rbxl");
+  WorkspaceInstance* workspace = root->getService<WorkspaceInstance>();
+  workspace->setInfinitePlane(true);
 }
 
 DataModel::~DataModel() { delete root; }

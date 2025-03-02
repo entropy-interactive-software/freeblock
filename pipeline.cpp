@@ -24,13 +24,13 @@ void Pipeline::model(ModelInstance* model) {
     glm::vec3 position;
     glm::vec3 color;
     glm::vec3 normal;
-    int surface;
+    glm::ivec4 surface;
 
     Vertex(glm::vec3 p, glm::vec3 c, glm::vec3 n, int s) {
       position = p;
       color = c;
       normal = n;
-      surface = s;
+      surface.x = s;
     }
   };
 
@@ -51,7 +51,7 @@ void Pipeline::model(ModelInstance* model) {
         rdm::gfx::DtFloat, 2, 3, sizeof(Vertex), (void*)offsetof(Vertex, color),
         cluster.vertexBuffer.get()));
     cluster.arrayPointers->addAttrib(rdm::gfx::BaseArrayPointers::Attrib(
-        rdm::gfx::DtInt, 3, 1, sizeof(Vertex), (void*)offsetof(Vertex, surface),
+        rdm::gfx::DtInt, 3, 4, sizeof(Vertex), (void*)offsetof(Vertex, surface),
         cluster.vertexBuffer.get()));
     cluster.modelUuid = INSTANCE_TOUUID(model);
     cluster.trackedBlocks = 0;

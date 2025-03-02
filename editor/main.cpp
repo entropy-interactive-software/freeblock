@@ -4,6 +4,7 @@
 #include "datamodel.hpp"
 #include "fb_game.hpp"
 #include "instance.hpp"
+#include "players.hpp"
 #include "runservice.hpp"
 
 static freeblock::Instance* selectedInstance = NULL;
@@ -36,15 +37,24 @@ int main(int argc, char** argv) {
   game.setEditor(true);
   game.earlyInit();
   game.getGfxEngine()->renderStepped.listen([&game] {
-    ImGui::Begin("Editor");
-
     freeblock::DataModel* dm =
         (freeblock::DataModel*)game.getWorld()->getUser();
+    freeblock::PlayersService* players =
+        dm->getRoot()->getService<freeblock::PlayersService>();
+
+    if (players->getLocalPlayer()) return;
+
+    ImGui::Begin("Editor");
+
     freeblock::RunService* run =
         dm->getRoot()->getService<freeblock::RunService>();
 
     if (run->getState() != freeblock::RunService::Running) {
+      if (ImGui::Button("Start Simulation")) {
+        run->start();
+      }
       if (ImGui::Button("Play")) {
+        players->createLocalPlayer();
         run->start();
       }
     } else {

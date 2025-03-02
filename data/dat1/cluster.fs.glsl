@@ -34,8 +34,8 @@ void main() {
   colors[3] = vec4(0.0, 0.0, 1.0, 1.0);
   colors[4] = vec4(1.0, 0.0, 1.0, 1.0);
   colors[5] = vec4(1.0, 1.0, 0.0, 1.0);
-  f_color = colors[v_fsurface];
+  // f_color = colors[v_fsurface];
 
-  // f_color = vec4(result, 1.0);
+  f_color = vec4(result, 1.0);
   f_bloom = vec4(f_color.rgb * brightness, 1.0);
 }

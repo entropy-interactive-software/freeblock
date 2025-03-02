@@ -155,6 +155,24 @@ void Game::initializeClient() {
           getGfxEngine()->getMeshCache()->get("dat0/cube.obj").value();
       _model->render(getGfxEngine()->getDevice());
     }
+    WorkspaceInstance* workspace =
+        dm->getRoot()->getService<WorkspaceInstance>();
+    if (workspace->getInfinitePlane()) {
+      getGfxEngine()->getDevice()->setDepthState(rdm::gfx::BaseDevice::LEqual);
+      auto mt = getGfxEngine()->getMaterialCache()->getOrLoad("Mesh").value();
+      rdm::gfx::BaseProgram* bp =
+          mt->prepareDevice(getGfxEngine()->getDevice(), 0);
+      glm::mat4 model(1);
+      glm::vec3 camPos = cam.getPosition();
+      model = glm::translate(model, glm::vec3(camPos.x, 0, camPos.y));
+      bp->setParameter("model", rdm::gfx::DtMat4,
+                       rdm::gfx::BaseProgram::Parameter{.matrix4x4 = model});
+      rdm::gfx::Model* _model = getGfxEngine()
+                                    ->getMeshCache()
+                                    ->get("content/meshes/infinite_plane.obj")
+                                    .value();
+      _model->render(getGfxEngine()->getDevice());
+    }
 
     cam.setPosition(
         (glm::mat3(r1) * glm::mat3(r2) * glm::vec3(0, 0, isGhost ? 100 : 5)) +

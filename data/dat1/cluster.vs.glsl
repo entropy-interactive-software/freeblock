@@ -2,7 +2,7 @@
 layout(location = 0) in vec3 v_position;
 layout(location = 1) in vec3 v_normal;
 layout(location = 2) in vec3 v_color;
-layout(location = 3) in int v_surface;
+layout(location = 3) in ivec4 v_surface;
 
 uniform mat4 model = mat4(1);
 uniform mat4 viewMatrix = mat4(1);
@@ -26,5 +26,5 @@ void main() {
   gl_Position = pos;
   v_fcolor = v_color;
   v_fnormal = v_normal;
-  v_fsurface = v_surface;
+  v_fsurface = v_surface.x;
 }
