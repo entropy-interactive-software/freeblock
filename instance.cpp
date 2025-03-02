@@ -3,6 +3,12 @@
 #include "datamodel.hpp"
 #include "logging.hpp"
 namespace freeblock {
+static InstanceFactory* _singleton = 0;
+InstanceFactory* InstanceFactory::singleton() {
+  if (!_singleton) _singleton = new InstanceFactory;
+  return _singleton;
+}
+
 Instance::Instance(DataModel* dataModel) {
   this->dataModel = dataModel;
   uuid = dataModel->newInstance(this);
@@ -12,19 +18,16 @@ Instance::Instance(DataModel* dataModel) {
 }
 
 Instance::~Instance() {
+  setParent(NULL);
+
   for (auto childUUID : children) {
     Instance* instance = dataModel->getInstanceByUUID(childUUID);
     if (instance) {
       delete instance;
-    } else {
-      rdm::Log::printf(
-          rdm::LOG_WARN,
-          "Instance %s deleted, but no instance reference could be found",
-          childUUID.c_str());
     }
   }
 
-  setParent(NULL);
+  dataModel->removeInstance(uuid);
 }
 
 Instance* Instance::getParent() {

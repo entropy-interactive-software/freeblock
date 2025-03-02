@@ -21,14 +21,12 @@ void PlayerInstance::spawnCharacter() {
   block = playerModel->createChild<BlockInstance>();
   block->setName("Body");
   block->setPosition(glm::vec3(0, 0, 0));
-  block->setSize(glm::vec3(4, 6, 1));
+  block->setSize(glm::vec3(1.723, 1.413, 0.433));
   block->setAnchored(false);
 
   MeshInstance* mesh = block->createChild<MeshInstance>();
   mesh->setMeshPath("content/meshes/playermodel.obj");
 
   playerModel->setPrimaryBlock(block);
-
-  playerModel->moveTo(glm::vec3(10, 10, 30));
 }
 }  // namespace freeblock

@@ -7,7 +7,7 @@
 #include "LinearMath/btTransform.h"
 #include "model.hpp"
 namespace freeblock {
-INSTANCE_CTOR(BlockInstance, PVInstance) {
+INSTANCE_CTOR_CREATABLE(BlockInstance, PVInstance) {
   size = glm::vec3(2, 1, 4);
   shape = BlockInstance::Cuboid;
   color = rand() % 3;
@@ -18,16 +18,25 @@ INSTANCE_CTOR(BlockInstance, PVInstance) {
   collisionShape->setUserPointer(this);
   motionState = new btDefaultMotionState(btTransform::getIdentity());
   btVector3 inertia;
-  collisionShape->calculateLocalInertia(1.0, inertia);
-  btRigidBody::btRigidBodyConstructionInfo rbInfo(1.0, motionState,
+  collisionShape->calculateLocalInertia(size.length(), inertia);
+  btRigidBody::btRigidBodyConstructionInfo rbInfo(size.length(), motionState,
                                                   collisionShape, inertia);
   rigidBody = new btRigidBody(rbInfo);
   rigidBody->setUserPointer(this);
 
   getDM()->getWorld()->getPhysicsWorld()->getWorld()->addRigidBody(rigidBody);
-  getDM()->getWorld()->getPhysicsWorld()->physicsStepping.listen(
+  id = getDM()->getWorld()->getPhysicsWorld()->physicsStepping.listen(
       [this] { physicsStep(); });
   physDirty = true;
+}
+
+BlockInstance::~BlockInstance() {
+  getDM()->getWorld()->getPhysicsWorld()->getWorld()->removeRigidBody(
+      rigidBody);
+  delete rigidBody;
+  delete motionState;
+  delete collisionShape;
+  getDM()->getWorld()->getPhysicsWorld()->physicsStepping.removeListener(id);
 }
 
 void BlockInstance::physicsInit() {
@@ -39,14 +48,18 @@ void BlockInstance::physicsInit() {
     rigidBody->setMassProps(0.0, btVector3(0.0, 0.0, 0.0));
   } else {
     btVector3 inertia;
-    collisionShape->calculateLocalInertia(1.0, inertia);
-    rigidBody->setMassProps(1.0, inertia);
+    collisionShape->calculateLocalInertia(size.length(), inertia);
+    rigidBody->setMassProps(size.length(), inertia);
   }
 
   btTransform transform;
   transform.setBasis(rdm::BulletHelpers::toMat3(getBasis()));
   transform.setOrigin(rdm::BulletHelpers::toVector3(getPosition()));
   rigidBody->setWorldTransform(transform);
+
+  if (!anchored) {
+    rigidBody->activate(true);
+  }
 
   physDirty = false;
 }

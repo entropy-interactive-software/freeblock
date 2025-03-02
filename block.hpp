@@ -22,7 +22,11 @@ class BlockInstance : public PVInstance {
   bool physDirty;
   void physicsStep();
 
+  rdm::ClosureId id;
+
  public:
+  virtual ~BlockInstance();
+
   enum Shape {
     Cuboid,
     Sphere,

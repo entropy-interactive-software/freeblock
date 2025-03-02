@@ -4,7 +4,7 @@
 #include "instance.hpp"
 #include "pvinstance.hpp"
 namespace freeblock {
-INSTANCE_CTOR(ModelInstance, Instance) {}
+INSTANCE_CTOR_CREATABLE(ModelInstance, Instance) {}
 
 void ModelInstance::moveTo(glm::vec3 position) {
   BlockInstance* primary = getPrimaryBlock();

@@ -37,6 +37,8 @@ void ScriptContext::addScript(ScriptInstance* instance) {
   ScriptAPI::add(threads[instance->getUUID()].state);
 }
 
+void ScriptContext::step() {}
+
 void ScriptContext::scriptSourceChange(ScriptInstance* instance) {
   auto it = threads.find(instance->getUUID());
   if (it != threads.end()) {

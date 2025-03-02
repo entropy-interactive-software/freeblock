@@ -3,7 +3,7 @@
 #include "instance.hpp"
 #include "script_context.hpp"
 namespace freeblock {
-INSTANCE_CTOR(ScriptInstance, Instance) {
+INSTANCE_CTOR_CREATABLE(ScriptInstance, Instance) {
   ScriptContext* ctxt = getService<ScriptContext>();
   ctxt->addScript(this);
 }

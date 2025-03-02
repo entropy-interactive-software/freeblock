@@ -6,6 +6,43 @@
 #include "datamodel.hpp"
 #include "reflection.hpp"
 namespace freeblock {
+typedef std::function<Instance*(DataModel*)> InstanceConstructor;
+class InstanceFactory {
+  std::map<std::string, InstanceConstructor> constructors;
+
+ public:
+  void addConstructor(const char* name, InstanceConstructor c) {
+    constructors[name] = c;
+  }
+
+  Instance* create(const char* name, DataModel* dm) {
+    auto it = constructors.find(name);
+    if (it != constructors.end()) {
+      return constructors[name](dm);
+    } else {
+      return NULL;
+    }
+  }
+
+  std::vector<std::string> getInstances() {
+    std::vector<std::string> s;
+    for (auto& con : constructors) {
+      s.push_back(con.first);
+    }
+    return s;
+  }
+
+  static InstanceFactory* singleton();
+};
+
+// for internal use only
+class InstanceFactoryEntry {
+ public:
+  InstanceFactoryEntry(const char* name, InstanceConstructor c) {
+    InstanceFactory::singleton()->addConstructor(name, c);
+  }
+};
+
 #define INSTANCE_TOUUID(I) (I ? I->getUUID() : "nil")
 #define INSTANCE(N, P)                                    \
  public:                                                  \
@@ -31,6 +68,10 @@ namespace freeblock {
                                                           \
  private:
 #define INSTANCE_CTOR(N, P) N::N(DataModel* dm) : P(dm)
+#define INSTANCE_CTOR_CREATABLE(N, P)                                       \
+  static InstanceFactoryEntry __##N(#N,                                     \
+                                    [](DataModel* d) { return new N(d); }); \
+  N::N(DataModel* dm) : P(dm)
 class Instance : public reflection::Described {
   DataModel* dataModel;
   InstanceUUID parent;

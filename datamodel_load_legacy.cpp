@@ -10,6 +10,7 @@
 #include "workspace.hpp"
 namespace freeblock {
 static rdm::CVar dm_anchorpartslegacy("dm_anchorpartslegacy", "1", CVARF_SAVE);
+static rdm::CVar dm_buildjointslegacy("dm_buildjointslegacy", "0", CVARF_SAVE);
 
 static void parseNode(DataModel *dm, Instance *instance,
                       rapidxml::xml_node<> *node) {
@@ -88,8 +89,10 @@ void DataModel::loadLegacyMap(const char *path) {
     parseNode(this, getRoot(), node);
   }
 
-  // JointService *joints = getRoot()->getService<JointService>();
-  // joints->buildJoints(getRoot()->getService<WorkspaceInstance>());
+  if (dm_buildjointslegacy.getBool()) {
+    JointService *joints = getRoot()->getService<JointService>();
+    joints->buildJoints(getRoot()->getService<WorkspaceInstance>());
+  }
 
   rdm::Log::printf(rdm::LOG_INFO, "Loaded map %s", path);
 }

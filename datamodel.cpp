@@ -4,11 +4,15 @@
 #include <random>
 
 #include "instance.hpp"
+#include "runservice.hpp"
 #include "script_context.hpp"
 namespace freeblock {
 DataModel::DataModel(rdm::World* world) {
   this->world = world;
   root = new Instance(this);
+
+  RunService* run = root->getService<RunService>();
+  run->stop();
 
   loadLegacyMap("map.rbxl");
 }
@@ -22,6 +26,8 @@ bool DataModel::isServer() {
 bool DataModel::isClient() {
   return !getWorld()->getNetworkManager()->isBackend();
 }
+
+void DataModel::removeInstance(InstanceUUID uuid) { instances.erase(uuid); }
 
 // STOLEN FROM https://stackoverflow.com/a/60198074
 static std::random_device rd;

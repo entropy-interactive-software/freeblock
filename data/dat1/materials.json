@@ -20,19 +20,9 @@
 		{"ProgramName": "GuiImage"}
 	    ]
 	},
-	"Voxel": {
-	    "Techniques": [
-		{"ProgramName": "Voxel"}
-	    ]
-	},
 	"PostProcess": {
 	    "Techniques": [
 		{"ProgramName": "PostProcess1"}
-	    ]
-	},
-	"RayMarch": {
-	    "Techniques": [
-		{"ProgramName": "RayMarch"}
 	    ]
 	},
 	"HeightmapTesselated": {
@@ -40,24 +30,9 @@
 		{"ProgramName": "HeightmapTesselated"}
 	    ]
 	},
-	"BspBrush": {
-	    "Techniques": [
-		{"ProgramName": "BspBrush"}
-	    ]
-	},
-	"BspSky": {
-	    "Techniques": [
-		{"ProgramName": "BspSky"}
-	    ]
-	},
 	"Mesh": {
 	    "Techniques": [
 		{"ProgramName": "Mesh"}
-	    ]
-	},
-	"RoadTripMap": {
-	    "Techniques": [
-		{"ProgramName": "RoadTripMap"}
 	    ]
 	},
 	"GaussianBlur": {
@@ -74,6 +49,11 @@
 	    "Techniques": [
 		{"ProgramName": "Cluster"}
 	    ]
+	},
+	"Skybox": {
+	    "Techniques": [
+		{"ProgramName": "Skybox"}
+	    ]
 	}
     },
     "Programs": {
@@ -81,16 +61,12 @@
 	"GuiPanel": {"VSName": "dat1/gui/panel.vs.glsl", "FSName": "dat1/gui/panel.fs.glsl"},
 	"GuiText": {"VSName": "dat1/gui/panel.vs.glsl", "FSName": "dat1/gui/text.fs.glsl"},
 	"GuiImage": {"VSName": "dat1/gui/panel.vs.glsl", "FSName": "dat1/gui/image.fs.glsl"},
-	"Voxel": {"VSName": "dat1/voxel.vs", "FSName": "dat1/voxel.fs"},
 	"PostProcess1": {"VSName": "dat1/post.vs.glsl", "FSName": "dat1/post.fs.glsl"},
-	"RayMarch": {"VSName": "dat1/post.vs.glsl", "FSName": "dat1/ray_march.fs.glsl"},
 	"HeightmapTesselated": {"VSName": "dat1/heightmap.vs.glsl", "FSName": "dat1/heightmap.fs.glsl", "GSName": "dat1/heightmap.gs.glsl"},
-	"BspBrush": {"VSName": "dat1/bsp/brush.vs.glsl", "FSName": "dat1/bsp/brush.fs.glsl"},
-	"BspSky": {"VSName": "dat1/bsp/brush.vs.glsl", "FSName": "dat1/bsp/sky.fs.glsl"},
 	"Mesh": {"VSName": "dat1/mesh.vs.glsl", "FSName": "dat1/mesh.fs.glsl"},
 	"GaussianBlur": {"VSName": "dat1/post.vs.glsl", "FSName": "dat1/blur.fs.glsl"},
-	"RoadTripMap": {"VSName": "dat1/mesh.vs.glsl", "FSName": "dat1/rt/map.fs.glsl"},
 	"DbgPhysicsLine": {"VSName": "dat1/dbg/p_line.vs.glsl", "FSName": "dat1/dbg/p_line.fs.glsl"},
-	"Cluster": {"VSName": "dat1/cluster.vs.glsl", "FSName": "dat1/cluster.fs.glsl"}
+	"Cluster": {"VSName": "dat1/cluster.vs.glsl", "FSName": "dat1/cluster.fs.glsl"},
+	"Skybox": {"VSName": "dat1/skybox.vs.glsl", "FSName": "dat1/skybox.fs.glsl"}
     }
 }

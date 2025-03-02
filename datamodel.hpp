@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "network/entity.hpp"
 #include "world.hpp"
 
 namespace freeblock {
@@ -30,10 +31,22 @@ class DataModel {
   Instance* getInstanceByUUID(InstanceUUID uuid);
   template <typename T>
   T* getInstanceByUUID(InstanceUUID uuid) {
-    return dynamic_cast<T*>(getInstanceByUUID(uuid));
+    Instance* i = getInstanceByUUID(uuid);
+    if (!i) return NULL;
+    return dynamic_cast<T*>(i);
   }
+
+  void removeInstance(InstanceUUID uuid);
 
   InstanceUUID newInstance(Instance* instance);
   Instance* getRoot() { return root; }
+
+  void create(const char* name);
+};
+
+class DataModelTrackingEntity {
+ public:
+  DataModelTrackingEntity(rdm::network::NetworkManager* manager,
+                          rdm::network::EntityId id);
 };
 };  // namespace freeblock

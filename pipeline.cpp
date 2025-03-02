@@ -24,11 +24,13 @@ void Pipeline::model(ModelInstance* model) {
     glm::vec3 position;
     glm::vec3 color;
     glm::vec3 normal;
+    int surface;
 
-    Vertex(glm::vec3 p, glm::vec3 c, glm::vec3 n) {
+    Vertex(glm::vec3 p, glm::vec3 c, glm::vec3 n, int s) {
       position = p;
       color = c;
       normal = n;
+      surface = s;
     }
   };
 
@@ -47,6 +49,9 @@ void Pipeline::model(ModelInstance* model) {
         (void*)offsetof(Vertex, normal), cluster.vertexBuffer.get()));
     cluster.arrayPointers->addAttrib(rdm::gfx::BaseArrayPointers::Attrib(
         rdm::gfx::DtFloat, 2, 3, sizeof(Vertex), (void*)offsetof(Vertex, color),
+        cluster.vertexBuffer.get()));
+    cluster.arrayPointers->addAttrib(rdm::gfx::BaseArrayPointers::Attrib(
+        rdm::gfx::DtInt, 3, 1, sizeof(Vertex), (void*)offsetof(Vertex, surface),
         cluster.vertexBuffer.get()));
     cluster.modelUuid = INSTANCE_TOUUID(model);
     cluster.trackedBlocks = 0;
@@ -117,19 +122,19 @@ void Pipeline::model(ModelInstance* model) {
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, -0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(1, 0, 0) * brickBasis));
+                       brickColor, glm::vec3(1, 0, 0) * brickBasis, 0));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, -0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(1, 0, 0) * brickBasis));
+                       brickColor, glm::vec3(1, 0, 0) * brickBasis, 0));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, 0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(1, 0, 0) * brickBasis));
+                       brickColor, glm::vec3(1, 0, 0) * brickBasis, 0));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, 0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(1, 0, 0) * brickBasis));
+                       brickColor, glm::vec3(1, 0, 0) * brickBasis, 0));
 
             if (pushElements) {
               elements.push_back(index + 0);
@@ -148,19 +153,19 @@ void Pipeline::model(ModelInstance* model) {
             vertices.push_back(Vertex(
                 ((brickSize * glm::vec3(-0.5, -0.5, -0.5)) * brickBasis) +
                     brickPosition,
-                brickColor, glm::vec3(-1, 0, 0) * brickBasis));
+                brickColor, glm::vec3(-1, 0, 0) * brickBasis, 1));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, 0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(-1, 0, 0) * brickBasis));
+                       brickColor, glm::vec3(-1, 0, 0) * brickBasis, 1));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, -0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(-1, 0, 0) * brickBasis));
+                       brickColor, glm::vec3(-1, 0, 0) * brickBasis, 1));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, 0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(-1, 0, 0) * brickBasis));
+                       brickColor, glm::vec3(-1, 0, 0) * brickBasis, 1));
 
             if (pushElements) {
               elements.push_back(index + 0);
@@ -179,19 +184,19 @@ void Pipeline::model(ModelInstance* model) {
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, 0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 1, 0) * brickBasis));
+                       brickColor, glm::vec3(0, 1, 0) * brickBasis, 2));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, 0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 1, 0) * brickBasis));
+                       brickColor, glm::vec3(0, 1, 0) * brickBasis, 2));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, 0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 1, 0) * brickBasis));
+                       brickColor, glm::vec3(0, 1, 0) * brickBasis, 2));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, 0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 1, 0) * brickBasis));
+                       brickColor, glm::vec3(0, 1, 0) * brickBasis, 2));
 
             if (pushElements) {
               elements.push_back(index + 0);
@@ -210,19 +215,19 @@ void Pipeline::model(ModelInstance* model) {
             vertices.push_back(Vertex(
                 ((brickSize * glm::vec3(-0.5, -0.5, -0.5)) * brickBasis) +
                     brickPosition,
-                brickColor, glm::vec3(0, -1, 0) * brickBasis));
+                brickColor, glm::vec3(0, -1, 0) * brickBasis, 3));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, -0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, -1, 0) * brickBasis));
+                       brickColor, glm::vec3(0, -1, 0) * brickBasis, 3));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, -0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, -1, 0) * brickBasis));
+                       brickColor, glm::vec3(0, -1, 0) * brickBasis, 3));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, -0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, -1, 0) * brickBasis));
+                       brickColor, glm::vec3(0, -1, 0) * brickBasis, 3));
 
             if (pushElements) {
               elements.push_back(index + 0);
@@ -241,19 +246,19 @@ void Pipeline::model(ModelInstance* model) {
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, -0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 0, 1) * brickBasis));
+                       brickColor, glm::vec3(0, 0, 1) * brickBasis, 4));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, -0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 0, 1) * brickBasis));
+                       brickColor, glm::vec3(0, 0, 1) * brickBasis, 4));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, 0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 0, 1) * brickBasis));
+                       brickColor, glm::vec3(0, 0, 1) * brickBasis, 4));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, 0.5, 0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 0, 1) * brickBasis));
+                       brickColor, glm::vec3(0, 0, 1) * brickBasis, 4));
 
             if (pushElements) {
               elements.push_back(index + 0);
@@ -272,19 +277,19 @@ void Pipeline::model(ModelInstance* model) {
             vertices.push_back(Vertex(
                 ((brickSize * glm::vec3(-0.5, -0.5, -0.5)) * brickBasis) +
                     brickPosition,
-                brickColor, glm::vec3(0, 0, -1)));
+                brickColor, glm::vec3(0, 0, -1), 5));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, -0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 0, -1)));
+                       brickColor, glm::vec3(0, 0, -1), 5));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(-0.5, 0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 0, -1)));
+                       brickColor, glm::vec3(0, 0, -1), 5));
             vertices.push_back(
                 Vertex(((brickSize * glm::vec3(0.5, 0.5, -0.5)) * brickBasis) +
                            brickPosition,
-                       brickColor, glm::vec3(0, 0, -1)));
+                       brickColor, glm::vec3(0, 0, -1), 5));
 
             if (pushElements) {
               elements.push_back(index + 0);
@@ -326,12 +331,22 @@ void Pipeline::render() {
 
   auto mt = engine->getMaterialCache()->getOrLoad("Cluster").value();
   rdm::gfx::BaseProgram* bp = mt->prepareDevice(engine->getDevice(), 0);
+  rdm::gfx::BaseProgram::Parameter param;
+  param.texture.slot = 0;
+  param.texture.texture = engine->getTextureCache()
+                              ->getOrLoad2d("content/textures/outlet.png")
+                              .value()
+                              .second;
+  bp->setParameter("outlet", rdm::gfx::DtSampler, param);
   rdm::gfx::RenderListSettings settings;
   settings.cull = rdm::gfx::BaseDevice::None;
   settings.state = rdm::gfx::BaseDevice::LEqual;
   rdm::gfx::RenderList list(bp, NULL, settings);
   for (auto& [uuid, cluster] : clusters) {
     if (cluster.count == 0) continue;
+    if (!dataModel->getInstanceByUUID<ModelInstance>(cluster.modelUuid)) {
+      continue;
+    }
 
     rdm::gfx::RenderCommand command(rdm::gfx::BaseDevice::Triangles,
                                     cluster.elementBuffer.get(), cluster.count,
