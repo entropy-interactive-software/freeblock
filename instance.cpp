@@ -2,12 +2,19 @@
 
 #include "datamodel.hpp"
 #include "logging.hpp"
+#include "reflection.hpp"
+#include "reflection_props.hpp"
 namespace freeblock {
 static InstanceFactory* _singleton = 0;
 InstanceFactory* InstanceFactory::singleton() {
   if (!_singleton) _singleton = new InstanceFactory;
   return _singleton;
 }
+
+REFLECTION_BEGIN_DESCRIBED(Instance);
+REFLECTION_PROPERTY_STRING(Instance, Name, &Instance::getName,
+                           &Instance::setName);
+REFLECTION_END_DESCRIBED();
 
 Instance::Instance(DataModel* dataModel) {
   this->dataModel = dataModel;

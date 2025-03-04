@@ -5,9 +5,12 @@
 #include "fb_game.hpp"
 #include "instance.hpp"
 #include "players.hpp"
+#include "reflection.hpp"
+#include "reflection_props.hpp"
 #include "runservice.hpp"
 
 static freeblock::Instance* selectedInstance = NULL;
+static bool createChildPrompt = NULL;
 
 static void instance_tree(freeblock::Instance* instance) {
   ImGui::PushID(instance->getUUID().c_str());
@@ -75,12 +78,63 @@ int main(int argc, char** argv) {
       ImGui::Text("Class: %s", selectedInstance->getClassName().c_str());
       if (ImGui::Button("Unselect")) {
         selectedInstance = NULL;
+        ImGui::End();
+        return;
       }
       if (ImGui::Button("Delete")) {
         delete selectedInstance;
         selectedInstance = NULL;
+        ImGui::End();
+        return;
+      }
+      if (ImGui::Button("Create child")) {
+        createChildPrompt = true;
       }
 
+      freeblock::reflection::PropertyList list =
+          selectedInstance->getProperties();
+      for (auto property : list) {
+        switch (property.second->getType()) {
+          case freeblock::reflection::Property::String:
+            ImGui::Text("%s \"%s\"", property.second->getName(),
+                        property.second->getString(selectedInstance).c_str());
+            break;
+          case freeblock::reflection::Property::Vec3: {
+            glm::vec3 v = property.second->getVec3(selectedInstance);
+            ImGui::Text("%s (%0.2f, %0.2f, %0.2f)", property.second->getName(),
+                        v.x, v.y, v.z);
+          } break;
+          case freeblock::reflection::Property::Bool:
+            ImGui::Text(
+                "%s %s", property.second->getName(),
+                property.second->getBool(selectedInstance) ? "true" : "false");
+            break;
+          default:
+            ImGui::Text("%s, bad type", property.second->getName());
+            break;
+        }
+      }
+
+      ImGui::End();
+    }
+
+    if (createChildPrompt) {
+      ImGui::Begin("Create");
+      auto instances = freeblock::InstanceFactory::singleton()->getInstances();
+      for (auto instance : instances) {
+        if (ImGui::Button(instance.c_str())) {
+          freeblock::Instance* i =
+              freeblock::InstanceFactory::singleton()->create(instance.c_str(),
+                                                              dm);
+          i->setParent(selectedInstance);
+          selectedInstance = i;
+          createChildPrompt = false;
+        }
+      }
+
+      if (ImGui::Button("Cancel")) {
+        createChildPrompt = false;
+      }
       ImGui::End();
     }
   });

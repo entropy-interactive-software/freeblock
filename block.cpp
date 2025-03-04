@@ -6,6 +6,8 @@
 #include "LinearMath/btMotionState.h"
 #include "LinearMath/btTransform.h"
 #include "model.hpp"
+#include "reflection.hpp"
+#include "reflection_props.hpp"
 namespace freeblock {
 INSTANCE_CTOR_CREATABLE(BlockInstance, PVInstance) {
   size = glm::vec3(2, 1, 4);
@@ -29,6 +31,15 @@ INSTANCE_CTOR_CREATABLE(BlockInstance, PVInstance) {
       [this] { physicsStep(); });
   physDirty = true;
 }
+
+REFLECTION_BEGIN_DESCRIBED(BlockInstance);
+REFLECTION_PROPERTY_VEC3(BlockInstance, Size, &BlockInstance::getSize,
+                         &BlockInstance::setSize);
+REFLECTION_PROPERTY_BOOL(BlockInstance, Anchored, &BlockInstance::getAnchored,
+                         &BlockInstance::setAnchored);
+REFLECTION_PROPERTY_INT(BlockInstance, BlockColor, &BlockInstance::getColor,
+                        &BlockInstance::setColor);
+REFLECTION_END_DESCRIBED();
 
 BlockInstance::~BlockInstance() {
   getDM()->getWorld()->getPhysicsWorld()->getWorld()->removeRigidBody(

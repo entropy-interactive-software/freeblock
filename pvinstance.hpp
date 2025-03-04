@@ -4,6 +4,7 @@
 #include "instance.hpp"
 namespace freeblock {
 class PVInstance : public Instance {
+  DESCRIBED;
   INSTANCE(PVInstance, Instance);
 
   glm::vec3 position;

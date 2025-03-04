@@ -6,6 +6,7 @@
 #include "pvinstance.hpp"
 namespace freeblock {
 class BlockInstance : public PVInstance {
+  DESCRIBED;
   INSTANCE(BlockInstance, PVInstance);
 
   glm::vec3 size;
@@ -43,6 +44,7 @@ class BlockInstance : public PVInstance {
   glm::vec3 getSize() { return size; }
   Shape getShape() { return shape; }
   BlockColor getColor() { return color; }
+  void setColor(BlockColor b) { color = b; }
 
   bool getAnchored() { return anchored; }
   void setAnchored(bool b) {

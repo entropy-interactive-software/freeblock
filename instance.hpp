@@ -44,28 +44,29 @@ class InstanceFactoryEntry {
 };
 
 #define INSTANCE_TOUUID(I) (I ? I->getUUID() : "nil")
-#define INSTANCE(N, P)                                    \
- public:                                                  \
-  typedef P Super;                                        \
-  typedef N Self;                                         \
-  virtual std::string getClassName() const { return #N; } \
-  template <typename T>                                   \
-  static bool isA(Instance* instance) {                   \
-    if (dynamic_cast<T*>(instance)) {                     \
-      return true;                                        \
-    } else {                                              \
-      return Instance::isA<Super>(instance);              \
-    }                                                     \
-  }                                                       \
-  virtual bool isA(const char* type) const {              \
-    if (getClassName() == type) {                         \
-      return true;                                        \
-    } else {                                              \
-      return Super::isA(type);                            \
-    }                                                     \
-  }                                                       \
-  N(DataModel* dm);                                       \
-                                                          \
+#define INSTANCE(N, P)                                          \
+ public:                                                        \
+  typedef P Super;                                              \
+  typedef N Self;                                               \
+  virtual std::string getParentClassName() const { return #P; } \
+  virtual std::string getClassName() const { return #N; }       \
+  template <typename T>                                         \
+  static bool isA(Instance* instance) {                         \
+    if (dynamic_cast<T*>(instance)) {                           \
+      return true;                                              \
+    } else {                                                    \
+      return Instance::isA<Super>(instance);                    \
+    }                                                           \
+  }                                                             \
+  virtual bool isA(const char* type) const {                    \
+    if (getClassName() == type) {                               \
+      return true;                                              \
+    } else {                                                    \
+      return Super::isA(type);                                  \
+    }                                                           \
+  }                                                             \
+  N(DataModel* dm);                                             \
+                                                                \
  private:
 #define INSTANCE_CTOR(N, P) N::N(DataModel* dm) : P(dm)
 #define INSTANCE_CTOR_CREATABLE(N, P)                                       \
@@ -73,6 +74,10 @@ class InstanceFactoryEntry {
                                     [](DataModel* d) { return new N(d); }); \
   N::N(DataModel* dm) : P(dm)
 class Instance : public reflection::Described {
+  DESCRIBED;
+
+  typedef reflection::Described Super;
+
   DataModel* dataModel;
   InstanceUUID parent;
   std::vector<InstanceUUID> children;
