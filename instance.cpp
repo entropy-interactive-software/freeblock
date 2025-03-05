@@ -14,6 +14,8 @@ InstanceFactory* InstanceFactory::singleton() {
 REFLECTION_BEGIN_DESCRIBED(Instance);
 REFLECTION_PROPERTY_STRING(Instance, Name, &Instance::getName,
                            &Instance::setName);
+REFLECTION_PROPERTY_INSTANCE(Instance, Parent, &Instance::getParent,
+                             &Instance::setParent);
 REFLECTION_END_DESCRIBED();
 
 Instance::Instance(DataModel* dataModel) {

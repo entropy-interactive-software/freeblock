@@ -5,6 +5,7 @@
 #include "soul.hpp"
 namespace freeblock {
 class PlayerInstance : public Instance {
+  DESCRIBED;
   INSTANCE(PlayerInstance, Instance);
 
   InstanceUUID character;

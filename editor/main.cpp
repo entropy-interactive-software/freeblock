@@ -45,24 +45,27 @@ int main(int argc, char** argv) {
     freeblock::PlayersService* players =
         dm->getRoot()->getService<freeblock::PlayersService>();
 
-    if (players->getLocalPlayer()) return;
-
     ImGui::Begin("Editor");
 
     freeblock::RunService* run =
         dm->getRoot()->getService<freeblock::RunService>();
 
-    if (run->getState() != freeblock::RunService::Running) {
-      if (ImGui::Button("Start Simulation")) {
-        run->start();
-      }
-      if (ImGui::Button("Play")) {
-        players->createLocalPlayer();
-        run->start();
-      }
-    } else {
-      if (ImGui::Button("Stop")) {
-        run->stop();
+    if (!players->getLocalPlayer()) {
+      if (run->getState() != freeblock::RunService::Running) {
+        if (ImGui::Button("Start Simulation")) {
+          run->start();
+        }
+        if (ImGui::Button("Play")) {
+          players->createLocalPlayer();
+          run->start();
+        }
+      } else {
+        if (ImGui::Button("Stop")) {
+          run->stop();
+        }
+        if (ImGui::Button("Load map.rbxl")) {
+          dm->loadLegacyMap("map.rbxl");
+        }
       }
     }
 
@@ -109,6 +112,12 @@ int main(int argc, char** argv) {
                 "%s %s", property.second->getName(),
                 property.second->getBool(selectedInstance) ? "true" : "false");
             break;
+          case freeblock::reflection::Property::InstanceRef: {
+            freeblock::Instance* instance =
+                property.second->getInstance(selectedInstance);
+            ImGui::Text("%s %s", property.second->getName(),
+                        instance ? instance->getName().c_str() : "nil");
+          } break;
           default:
             ImGui::Text("%s, bad type", property.second->getName());
             break;

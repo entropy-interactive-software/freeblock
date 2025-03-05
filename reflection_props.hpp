@@ -4,6 +4,10 @@
 #include <stdexcept>
 #include <string>
 
+namespace freeblock {
+class Instance;
+};
+
 namespace freeblock::reflection {
 class Described;
 
@@ -12,7 +16,7 @@ class Property {
   std::string name;
 
  public:
-  enum Type { String, Integer, Bool, Float, Vec3, Vec2, Instance };
+  enum Type { String, Integer, Bool, Float, Vec3, Vec2, InstanceRef };
 
   const char* getName() const { return name.c_str(); };
   virtual Type getType() = 0;
@@ -50,6 +54,13 @@ class Property {
   }
   virtual void setVec3(Described* described, glm::vec3 value) {
     throw std::runtime_error("No vec3");
+  }
+
+  virtual Instance* getInstance(Described* described) {
+    throw std::runtime_error("No instance");
+  }
+  virtual void setInstance(Described* described, Instance* instance) {
+    throw std::runtime_error("No instance");
   }
 };
 
@@ -191,6 +202,34 @@ class PropertyVec3 : public Property {
   }
 };
 
+template <typename T>
+class PropertyInstance : public Property {
+  typedef Instance* DataType;
+
+  std::function<void(T*, DataType)> setter;
+  std::function<DataType(T*)> getter;
+
+ public:
+  typedef std::function<void(T*, DataType)> Setter;
+  typedef std::function<DataType(T*)> Getter;
+
+  PropertyInstance(std::string name, Setter set, Getter get) {
+    this->name = name;
+    setter = set;
+    getter = get;
+  }
+
+  virtual Type getType() { return InstanceRef; }
+
+  virtual DataType getInstance(Described* described) {
+    return getter(dynamic_cast<T*>(described));
+  }
+
+  virtual void setInstance(Described* described, DataType str) {
+    setter(dynamic_cast<T*>(described), str);
+  }
+};
+
 #define REFLECTION_PROPERTY_STRING(T, N, Gt, St)                     \
   static freeblock::reflection::PropertyString<T> __##N(#N, St, Gt); \
   pl[#N] = &__##N;
@@ -209,5 +248,9 @@ class PropertyVec3 : public Property {
 
 #define REFLECTION_PROPERTY_VEC3(T, N, Gt, St)                     \
   static freeblock::reflection::PropertyVec3<T> __##N(#N, St, Gt); \
+  pl[#N] = &__##N;
+
+#define REFLECTION_PROPERTY_INSTANCE(T, N, Gt, St)                     \
+  static freeblock::reflection::PropertyInstance<T> __##N(#N, St, Gt); \
   pl[#N] = &__##N;
 };  // namespace freeblock::reflection

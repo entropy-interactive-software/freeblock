@@ -5,10 +5,17 @@
 #include "joint.hpp"
 #include "mesh.hpp"
 #include "model.hpp"
+#include "reflection.hpp"
+#include "reflection_props.hpp"
 #include "soul.hpp"
 #include "workspace.hpp"
 namespace freeblock {
 INSTANCE_CTOR(PlayerInstance, Instance) {}
+
+REFLECTION_BEGIN_DESCRIBED(PlayerInstance);
+REFLECTION_PROPERTY_INSTANCE(PlayerInstance, Soul,
+                             &PlayerInstance::getCharacter, NULL);
+REFLECTION_END_DESCRIBED();
 
 void PlayerInstance::spawnCharacter() {
   ModelInstance* playerModel =

@@ -2,6 +2,7 @@
 #include "instance.hpp"
 namespace freeblock {
 class MeshInstance : public Instance {
+  DESCRIBED;
   INSTANCE(MeshInstance, Instance);
 
   std::string meshPath;

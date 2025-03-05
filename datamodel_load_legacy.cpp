@@ -89,9 +89,12 @@ void DataModel::loadLegacyMap(const char *path) {
     parseNode(this, getRoot(), node);
   }
 
+  WorkspaceInstance *workspace = getRoot()->getService<WorkspaceInstance>();
+  workspace->setInfinitePlane(false);
+
   if (dm_buildjointslegacy.getBool()) {
     JointService *joints = getRoot()->getService<JointService>();
-    joints->buildJoints(getRoot()->getService<WorkspaceInstance>());
+    joints->buildJoints(workspace);
   }
 
   rdm::Log::printf(rdm::LOG_INFO, "Loaded map %s", path);

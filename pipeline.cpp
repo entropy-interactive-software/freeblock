@@ -366,6 +366,7 @@ void Pipeline::render() {
       engine->getMaterialCache()->getOrLoad("Mesh").value();
   rdm::gfx::BaseProgram* program =
       material->prepareDevice(engine->getDevice(), 0);
+
   for (auto uuid : meshesToRender) {
     BlockInstance* block = dataModel->getInstanceByUUID<BlockInstance>(uuid);
     MeshInstance* mesh = block->findFirstChildOfType<MeshInstance>();
@@ -376,6 +377,7 @@ void Pipeline::render() {
       program->setParameter(
           "model", rdm::gfx::DtMat4,
           rdm::gfx::BaseProgram::Parameter{.matrix4x4 = model});
+      program->bind();
       rdm::gfx::Model* _model =
           engine->getMeshCache()->get(mesh->getMeshPath().c_str()).value();
       _model->render(engine->getDevice());

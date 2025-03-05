@@ -151,6 +151,7 @@ void Game::initializeClient() {
       bp->setParameter("skybox", rdm::gfx::DtSampler,
                        rdm::gfx::BaseProgram::Parameter{
                            .texture.slot = 0, .texture.texture = m_skybox});
+      bp->bind();
       rdm::gfx::Model* _model =
           getGfxEngine()->getMeshCache()->get("dat0/cube.obj").value();
       _model->render(getGfxEngine()->getDevice());
@@ -167,6 +168,7 @@ void Game::initializeClient() {
       model = glm::translate(model, glm::vec3(camPos.x, 0, camPos.y));
       bp->setParameter("model", rdm::gfx::DtMat4,
                        rdm::gfx::BaseProgram::Parameter{.matrix4x4 = model});
+      bp->bind();
       rdm::gfx::Model* _model = getGfxEngine()
                                     ->getMeshCache()
                                     ->get("content/meshes/infinite_plane.obj")
