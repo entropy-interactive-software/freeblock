@@ -379,7 +379,10 @@ void Pipeline::render() {
           rdm::gfx::BaseProgram::Parameter{.matrix4x4 = model});
       program->bind();
       rdm::gfx::Model* _model =
-          engine->getMeshCache()->get(mesh->getMeshPath().c_str()).value();
+          engine->getMeshCache()
+              ->get(mesh->getMeshPath().empty() ? "content/meshes/default.obj"
+                                                : mesh->getMeshPath().c_str())
+              .value();
       _model->render(engine->getDevice());
     }
   }

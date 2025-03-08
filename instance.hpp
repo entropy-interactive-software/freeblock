@@ -103,6 +103,8 @@ class Instance : public reflection::Described {
   rdm::Signal<Instance*, Instance*> descendantAdding;
   rdm::Signal<Instance*, Instance*> descendantRemoving;
 
+  virtual void step() {};
+
   void setParent(Instance* instance);
   void addChild(Instance* instance) { instance->setParent(this); };
   template <typename T>

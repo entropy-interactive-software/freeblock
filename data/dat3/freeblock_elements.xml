@@ -1,0 +1,6 @@
+<gui name="Elements" anchor="TopLeft" horizontal="true">
+  <dom>
+    <label font="dat3/eras.ttf" ptsize="24" color="gray">Exit</label>
+  </dom>
+</gui>
+

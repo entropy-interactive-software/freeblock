@@ -75,6 +75,8 @@ base = static_library('base',
                       'block.hpp',
                       'datamodel.cpp',
                       'datamodel.hpp',
+                      'datamodel_described.cpp',
+                      'datamodel_described.hpp',
                       'datamodel_load_legacy.cpp', # rbxl loading
                       'mesh.cpp',
                       'mesh.hpp',

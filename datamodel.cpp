@@ -3,6 +3,7 @@
 
 #include <random>
 
+#include "datamodel_described.hpp"
 #include "instance.hpp"
 #include "runservice.hpp"
 #include "script_context.hpp"
@@ -10,7 +11,7 @@
 namespace freeblock {
 DataModel::DataModel(rdm::World* world) {
   this->world = world;
-  root = new Instance(this);
+  root = new DataModelDescribed(this);
 
   RunService* run = root->getService<RunService>();
   run->stop();
@@ -28,6 +29,12 @@ bool DataModel::isServer() {
 
 bool DataModel::isClient() {
   return !getWorld()->getNetworkManager()->isBackend();
+}
+
+void DataModel::step() {
+  for (auto& i : instances) {
+    i.second->step();
+  }
 }
 
 void DataModel::removeInstance(InstanceUUID uuid) { instances.erase(uuid); }

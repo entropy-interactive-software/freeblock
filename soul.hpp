@@ -5,5 +5,6 @@ class SoulInstance : public Instance {
   INSTANCE(SoulInstance, Instance);
 
  public:
+  virtual void step();
 };
 }  // namespace freeblock

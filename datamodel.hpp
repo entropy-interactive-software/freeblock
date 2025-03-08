@@ -11,9 +11,10 @@ namespace freeblock {
 class Instance;
 
 typedef std::string InstanceUUID;
+class DataModelDescribed;
 
 class DataModel {
-  Instance* root;
+  DataModelDescribed* root;
   rdm::World* world;
   std::unordered_map<InstanceUUID, Instance*> instances;
 
@@ -23,6 +24,8 @@ class DataModel {
 
   bool isServer();
   bool isClient();
+
+  void step();
 
   void loadLegacyMap(const char* path);
 
@@ -39,7 +42,7 @@ class DataModel {
   void removeInstance(InstanceUUID uuid);
 
   InstanceUUID newInstance(Instance* instance);
-  Instance* getRoot() { return root; }
+  Instance* getRoot() { return (Instance*)root; }
 
   void create(const char* name);
 };

@@ -37,6 +37,7 @@ static void instance_tree(freeblock::Instance* instance) {
 int main(int argc, char** argv) {
   rdm::Settings::singleton()->parseCommandLine(argv, argc);
   freeblock::Game game;
+  game.getWorldConstructorSettings().name = "freeblock";
   game.setEditor(true);
   game.earlyInit();
   game.getGfxEngine()->renderStepped.listen([&game] {
@@ -59,12 +60,12 @@ int main(int argc, char** argv) {
           players->createLocalPlayer();
           run->start();
         }
+        if (ImGui::Button("Load map.rbxl")) {
+          dm->loadLegacyMap("map.rbxl");
+        }
       } else {
         if (ImGui::Button("Stop")) {
           run->stop();
-        }
-        if (ImGui::Button("Load map.rbxl")) {
-          dm->loadLegacyMap("map.rbxl");
         }
       }
     }

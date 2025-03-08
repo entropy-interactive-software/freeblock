@@ -5,9 +5,15 @@ class RunService : public Service {
   INSTANCE(RunService, Service);
 
   void updateSimulation();
-  void step();
+
+  void _step();
+
+  btCollisionShape* infinitePlaneShape;
+  btRigidBody* infinitePlaneObject;
 
  public:
+  virtual ~RunService();
+
   enum State {
     Stopped,
     Paused,

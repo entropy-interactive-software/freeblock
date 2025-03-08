@@ -3,7 +3,7 @@
 #include "reflection.hpp"
 #include "reflection_props.hpp"
 namespace freeblock {
-INSTANCE_CTOR(MeshInstance, Instance) {}
+INSTANCE_CTOR_CREATABLE(MeshInstance, Instance) {}
 
 REFLECTION_BEGIN_DESCRIBED(MeshInstance);
 REFLECTION_PROPERTY_STRING(MeshInstance, Content, &MeshInstance::getMeshPath,

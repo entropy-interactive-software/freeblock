@@ -26,6 +26,7 @@ class ScriptContext : public Service {
  public:
   void addScript(ScriptInstance* instance);
   void scriptSourceChange(ScriptInstance* instance);
-  void step();
+
+  virtual void step();
 };
 };  // namespace freeblock

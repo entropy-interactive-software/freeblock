@@ -27,7 +27,7 @@ void PlayerInstance::spawnCharacter() {
 
   block = playerModel->createChild<BlockInstance>();
   block->setName("Body");
-  block->setPosition(glm::vec3(0, 0, 0));
+  block->setPosition(glm::vec3(0, 10, 0));
   block->setSize(glm::vec3(1.723, 1.413, 0.433));
   block->setAnchored(false);
 

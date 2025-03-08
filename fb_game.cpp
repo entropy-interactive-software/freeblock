@@ -197,6 +197,9 @@ void Game::initializeClient() {
     }
   });
 
+  Instance* root = dm->getRoot();
+  ScriptInstance* script = root->createChild<ScriptInstance>();
+  script->setSource("print(script.Type); print(script.Parent.Type)");
   // dm->getRoot()->getService<PlayersService>()->createLocalPlayer();
 }
 }  // namespace freeblock
