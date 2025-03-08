@@ -4,6 +4,7 @@
 #include "logging.hpp"
 #include "reflection.hpp"
 #include "reflection_props.hpp"
+#include "script_api.hpp"
 namespace freeblock {
 static InstanceFactory* _singleton = 0;
 InstanceFactory* InstanceFactory::singleton() {
@@ -17,6 +18,7 @@ REFLECTION_PROPERTY_STRING(Instance, Name, &Instance::getName,
 REFLECTION_PROPERTY_STRING(Instance, Type, &Instance::getClassName, NULL);
 REFLECTION_PROPERTY_INSTANCE(Instance, Parent, &Instance::getParent,
                              &Instance::setParent);
+REFLECTION_FUNCTION(Instance, GetChildren, &Instance::luaGetChildren);
 REFLECTION_END_DESCRIBED();
 
 Instance::Instance(DataModel* dataModel) {
@@ -61,6 +63,19 @@ Instance* Instance::findFirstChildOfName(const char* name) {
     }
   }
   return NULL;
+}
+
+int Instance::luaGetChildren(lua_State* L) {
+  Instance* instance =
+      dynamic_cast<Instance*>(DescribedBridge::getDescribed(L, 1));
+  auto children = instance->getChildren();
+  lua_newtable(L);
+  for (int i = 0; i < children.size(); i++) {
+    lua_pushinteger(L, i);
+    DescribedBridge::pushDescribed(L, children[i]);
+    lua_settable(L, -3);
+  }
+  return 1;
 }
 
 void Instance::setParent(Instance* instance) {

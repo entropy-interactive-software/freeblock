@@ -3,20 +3,29 @@
 #include <glm/glm.hpp>
 #include <stdexcept>
 #include <string>
+extern "C" {
+#include "lua/lauxlib.h"
+#include "lua/lua.h"
+}
 
 namespace freeblock {
 class Instance;
 };
 
+struct lua_State;
+
 namespace freeblock::reflection {
 class Described;
+
+typedef int LuaFunctionT(lua_State*);
+typedef std::function<LuaFunctionT> LuaFunction;
 
 class Property {
  protected:
   std::string name;
 
  public:
-  enum Type { String, Integer, Bool, Float, Vec3, Vec2, InstanceRef };
+  enum Type { String, Integer, Bool, Float, Vec3, Vec2, InstanceRef, Function };
 
   const char* getName() const { return name.c_str(); };
   virtual Type getType() = 0;
@@ -62,6 +71,8 @@ class Property {
   virtual void setInstance(Described* described, Instance* instance) {
     throw std::runtime_error("No instance");
   }
+
+  virtual LuaFunction getFunction() { throw std::runtime_error("No function"); }
 };
 
 template <typename T>
@@ -230,6 +241,22 @@ class PropertyInstance : public Property {
   }
 };
 
+template <typename T>
+class PropertyFunction : public Property {
+  typedef LuaFunction DataType;
+  LuaFunction func;
+
+ public:
+  PropertyFunction(std::string name, LuaFunction func) {
+    this->name = name;
+    this->func = func;
+  }
+
+  virtual Type getType() { return Function; }
+
+  DataType getFunction() { return func; }
+};
+
 #define REFLECTION_PROPERTY_STRING(T, N, Gt, St)                     \
   static freeblock::reflection::PropertyString<T> __##N(#N, St, Gt); \
   pl[#N] = &__##N;
@@ -252,5 +279,9 @@ class PropertyInstance : public Property {
 
 #define REFLECTION_PROPERTY_INSTANCE(T, N, Gt, St)                     \
   static freeblock::reflection::PropertyInstance<T> __##N(#N, St, Gt); \
+  pl[#N] = &__##N;
+
+#define REFLECTION_FUNCTION(T, N, Func)                              \
+  static freeblock::reflection::PropertyFunction<T> __##N(#N, Func); \
   pl[#N] = &__##N;
 };  // namespace freeblock::reflection

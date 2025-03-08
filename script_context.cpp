@@ -13,6 +13,7 @@ extern "C" {
 #include "script.hpp"
 namespace freeblock {
 INSTANCE_CTOR(ScriptContext, Service) {
+  setName("ScriptContext");
   rdm::Log::printf(rdm::LOG_INFO, "%s", LUA_COPYRIGHT);
 }
 

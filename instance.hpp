@@ -84,6 +84,8 @@ class Instance : public reflection::Described {
   std::string name;
   InstanceUUID uuid;
 
+  static int luaGetChildren(lua_State* L);
+
  public:
   Instance(DataModel* dataModel);
   virtual ~Instance();

@@ -2,5 +2,5 @@
 
 #include "instance.hpp"
 namespace freeblock {
-INSTANCE_CTOR(WorkspaceInstance, ModelInstance) {}
+INSTANCE_CTOR(WorkspaceInstance, ModelInstance) { setName("Workspace"); }
 };  // namespace freeblock

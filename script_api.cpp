@@ -30,6 +30,14 @@ int DescribedBridge::index(lua_State* L) {
           lua_pushnil(L);
         }
         break;
+      case reflection::Property::Function: {
+        lua_CFunction m =
+            *(p->getFunction().target<reflection::LuaFunctionT*>());
+        if (!m)
+          throw std::runtime_error(
+              "p->getFunction().target<int(lua_State*)> returned null");
+        lua_pushcfunction(L, m);
+      } break;
       default:
         rdm::Log::printf(rdm::LOG_ERROR, "Attempted access on property %s",
                          name);
@@ -89,6 +97,14 @@ int DescribedBridge::newindex(lua_State* L) {
   throw std::runtime_error("Invalid access on property");
 }
 
+int DescribedBridge::gc(lua_State* L) {
+  void** ud = (void**)luaL_checkudata(L, 1, "Described");
+  rdm::Log::printf(rdm::LOG_ERROR, "gc");
+  delete ud;
+  lua_pop(L, 1);
+  return 0;
+}
+
 void DescribedBridge::add(lua_State* L) {
   // luaL_Reg reg[] = {{"__eq", __eq}, {NULL, NULL}};
 
@@ -104,6 +120,10 @@ void DescribedBridge::add(lua_State* L) {
 
   lua_pushstring(L, "__newindex");
   lua_pushcfunction(L, newindex);
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "__gc");
+  lua_pushcfunction(L, gc);
   lua_settable(L, -3);
 
   lua_pop(L, 1);

@@ -21,6 +21,8 @@ INSTANCE_CTOR(RunService, Service) {
 
   getDM()->getWorld()->getPhysicsWorld()->getWorld()->addRigidBody(
       infinitePlaneObject);
+
+  setName("RunService");
 }
 
 RunService::~RunService() {

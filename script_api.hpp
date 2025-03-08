@@ -9,6 +9,7 @@ namespace freeblock {
 class DescribedBridge {
   static int index(lua_State* L);
   static int newindex(lua_State* L);
+  static int gc(lua_State* L);
 
  public:
   static void add(lua_State* l);
