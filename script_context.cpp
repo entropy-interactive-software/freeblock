@@ -53,7 +53,7 @@ void ScriptContext::scriptSourceChange(ScriptInstance* instance) {
   if (it != threads.end()) {
     try {
       ScriptThread& th = it->second;
-      int error = luaL_loadstring(th.state, instance->getSource());
+      int error = luaL_loadstring(th.state, instance->getRealSource().c_str());
       if (error) {
         rdm::Log::printf(rdm::LOG_ERROR, "%s", lua_tostring(th.state, -1));
         lua_pop(th.state, 1);

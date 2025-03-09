@@ -1,7 +1,9 @@
 #pragma once
 #include "model.hpp"
+#include "reflection.hpp"
 namespace freeblock {
 class WorkspaceInstance : public ModelInstance {
+  DESCRIBED;
   INSTANCE(WorkspaceInstance, ModelInstance);
 
   bool infinitePlane;

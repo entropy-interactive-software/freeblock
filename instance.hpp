@@ -85,6 +85,8 @@ class Instance : public reflection::Described {
   InstanceUUID uuid;
 
   static int luaGetChildren(lua_State* L);
+  static int luaIsA(lua_State* L);
+  static int luaFindFirstChild(lua_State* L);
 
  public:
   Instance(DataModel* dataModel);
@@ -133,7 +135,9 @@ class Instance : public reflection::Described {
     return NULL;
   }
 
-  virtual bool isA(const char* type) const { return (getClassName() == type); }
+  virtual bool isA(const char* type) const {
+    return (std::string("Instance") == type);
+  }
   template <typename T>
   static bool isA(Instance* instance) {
     if (dynamic_cast<T*>(instance)) {

@@ -19,6 +19,8 @@ REFLECTION_PROPERTY_STRING(Instance, Type, &Instance::getClassName, NULL);
 REFLECTION_PROPERTY_INSTANCE(Instance, Parent, &Instance::getParent,
                              &Instance::setParent);
 REFLECTION_FUNCTION(Instance, GetChildren, &Instance::luaGetChildren);
+REFLECTION_FUNCTION(Instance, IsA, &Instance::luaIsA);
+REFLECTION_FUNCTION(Instance, FindFirstChild, &Instance::luaFindFirstChild);
 REFLECTION_END_DESCRIBED();
 
 Instance::Instance(DataModel* dataModel) {
@@ -75,6 +77,26 @@ int Instance::luaGetChildren(lua_State* L) {
     DescribedBridge::pushDescribed(L, children[i]);
     lua_settable(L, -3);
   }
+  return 1;
+}
+
+int Instance::luaIsA(lua_State* L) {
+  Instance* instance =
+      dynamic_cast<Instance*>(DescribedBridge::getDescribed(L, 1));
+  const char* type = lua_tostring(L, 2);
+  lua_pushboolean(L, instance->isA(type));
+  return 1;
+}
+
+int Instance::luaFindFirstChild(lua_State* L) {
+  Instance* instance =
+      dynamic_cast<Instance*>(DescribedBridge::getDescribed(L, 1));
+  const char* name = lua_tostring(L, 2);
+  auto ch = instance->findFirstChildOfName(name);
+  if (ch)
+    DescribedBridge::pushDescribed(L, ch);
+  else
+    lua_pushnil(L);
   return 1;
 }
 

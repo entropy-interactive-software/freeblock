@@ -119,6 +119,8 @@ int main(int argc, char** argv) {
             ImGui::Text("%s %s", property.second->getName(),
                         instance ? instance->getName().c_str() : "nil");
           } break;
+          case freeblock::reflection::Property::Function:
+            break;
           default:
             ImGui::Text("%s, bad type", property.second->getName());
             break;

@@ -165,7 +165,7 @@ void Game::initializeClient() {
           mt->prepareDevice(getGfxEngine()->getDevice(), 0);
       glm::mat4 model(1);
       glm::vec3 camPos = cam.getPosition();
-      model = glm::translate(model, glm::vec3(camPos.x, 0, camPos.y));
+      model = glm::translate(model, glm::vec3(camPos.x, 1, camPos.y));
       bp->setParameter("model", rdm::gfx::DtMat4,
                        rdm::gfx::BaseProgram::Parameter{.matrix4x4 = model});
       bp->bind();
@@ -177,7 +177,7 @@ void Game::initializeClient() {
     }
 
     cam.setPosition(
-        (glm::mat3(r1) * glm::mat3(r2) * glm::vec3(0, 0, isGhost ? 100 : 5)) +
+        (glm::mat3(r1) * glm::mat3(r2) * glm::vec3(0, 0, isGhost ? 50 : 5)) +
         cam.getTarget());
   });
 
@@ -199,8 +199,7 @@ void Game::initializeClient() {
 
   Instance* root = dm->getRoot();
   ScriptInstance* script = root->createChild<ScriptInstance>();
-  script->setSource(
-      "local c = game:GetChildren(); for i = 1, #c do print(c[i].Name); end");
+  script->setLinkedSource("content/scripts/test.lua");
   // dm->getRoot()->getService<PlayersService>()->createLocalPlayer();
 }
 }  // namespace freeblock
