@@ -12,15 +12,6 @@ extern "C" {
 #include "logging.hpp"
 #include "script.hpp"
 namespace freeblock {
-INSTANCE_CTOR(ScriptContext, Service) {
-  setName("ScriptContext");
-  rdm::Log::printf(rdm::LOG_INFO, "%s", LUA_COPYRIGHT);
-}
-
-ScriptThread::~ScriptThread() {
-  if (state) lua_close(state);
-}
-
 static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
   (void)ud;
   (void)osize; /* not used */
@@ -31,12 +22,23 @@ static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
     return realloc(ptr, nsize);
 }
 
+INSTANCE_CTOR(ScriptContext, Service) {
+  setName("ScriptContext");
+  rdm::Log::printf(rdm::LOG_INFO, "%s", LUA_COPYRIGHT);
+  globalState = lua_newstate(l_alloc, this);
+}
+
+ScriptThread::~ScriptThread() {
+  if (state) lua_close(state);
+}
+
 void ScriptContext::addScript(ScriptInstance* instance) {
   ScriptThread th;
   th.state = 0;
   th.uuid = instance->getUUID();
+  th.status = ScriptThread::Stopped;
   threads[instance->getUUID()] = std::move(th);
-  lua_State* L = lua_newstate(l_alloc, &threads[instance->getUUID()]);
+  lua_State* L = lua_newthread(globalState);
   threads[instance->getUUID()].state = L;
   ScriptAPI::add(threads[instance->getUUID()].state);
 
@@ -46,7 +48,38 @@ void ScriptContext::addScript(ScriptInstance* instance) {
   lua_setglobal(L, "game");
 }
 
-void ScriptContext::step() {}
+void ScriptContext::step() {
+  for (auto& [uuid, th] : threads) {
+    switch (th.status) {
+      case ScriptThread::Yielding_PleaseStart:
+        try {
+          int nr;
+          switch (lua_resume(th.state, NULL, 0, &nr)) {
+            case LUA_YIELD:
+              th.status = ScriptThread::Yielding;
+              break;
+            case LUA_OK:
+              th.status = ScriptThread::Stopped;
+              break;
+            default:
+              rdm::Log::printf(rdm::LOG_ERROR, "%s",
+                               lua_tostring(th.state, -1));
+              lua_pop(th.state, 1);
+              th.status = ScriptThread::Stopped;
+              break;
+          }
+        } catch (std::exception& e) {
+          th.status = ScriptThread::Stopped;
+        }
+        break;
+      case ScriptThread::Yielding:
+        th.status = ScriptThread::Yielding_PleaseStart;
+        break;
+      default:
+        break;
+    }
+  }
+}
 
 void ScriptContext::scriptSourceChange(ScriptInstance* instance) {
   auto it = threads.find(instance->getUUID());
@@ -54,11 +87,7 @@ void ScriptContext::scriptSourceChange(ScriptInstance* instance) {
     try {
       ScriptThread& th = it->second;
       int error = luaL_loadstring(th.state, instance->getRealSource().c_str());
-      if (error) {
-        rdm::Log::printf(rdm::LOG_ERROR, "%s", lua_tostring(th.state, -1));
-        lua_pop(th.state, 1);
-      }
-      error = lua_pcall(th.state, 0, 0, 0);
+      th.status = ScriptThread::Yielding_PleaseStart;
       if (error) {
         rdm::Log::printf(rdm::LOG_ERROR, "%s", lua_tostring(th.state, -1));
         lua_pop(th.state, 1);

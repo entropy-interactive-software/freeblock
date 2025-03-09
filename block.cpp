@@ -16,15 +16,18 @@ INSTANCE_CTOR_CREATABLE(BlockInstance, PVInstance) {
   anchored = true;
   canCollide = true;
 
-  collisionShape = new btBoxShape(rdm::BulletHelpers::toVector3(size / 2.f));
-  collisionShape->setUserPointer(this);
-  motionState = new btDefaultMotionState(btTransform::getIdentity());
-  btVector3 inertia;
-  collisionShape->calculateLocalInertia(size.length(), inertia);
-  btRigidBody::btRigidBodyConstructionInfo rbInfo(size.length(), motionState,
-                                                  collisionShape, inertia);
-  rigidBody = new btRigidBody(rbInfo);
-  rigidBody->setUserPointer(this);
+  {
+    std::scoped_lock l(getDM()->getWorld()->getPhysicsWorld()->mutex);
+    collisionShape = new btBoxShape(rdm::BulletHelpers::toVector3(size / 2.f));
+    collisionShape->setUserPointer(this);
+    motionState = new btDefaultMotionState(btTransform::getIdentity());
+    btVector3 inertia;
+    collisionShape->calculateLocalInertia(size.length(), inertia);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(size.length(), motionState,
+                                                    collisionShape, inertia);
+    rigidBody = new btRigidBody(rbInfo);
+    rigidBody->setUserPointer(this);
+  }
 
   getDM()->getWorld()->getPhysicsWorld()->getWorld()->addRigidBody(rigidBody);
   id = getDM()->getWorld()->getPhysicsWorld()->physicsStepping.listen(
@@ -51,6 +54,8 @@ BlockInstance::~BlockInstance() {
 }
 
 void BlockInstance::physicsInit() {
+  std::scoped_lock l(getDM()->getWorld()->getPhysicsWorld()->mutex);
+
   delete collisionShape;
   collisionShape = new btBoxShape(rdm::BulletHelpers::toVector3(size / 2.f));
   rigidBody->setCollisionShape(collisionShape);
@@ -80,6 +85,9 @@ void BlockInstance::physicsStep() {
 
   if (physDirty) {
     physicsInit();
+    if (ModelInstance* parent = dynamic_cast<ModelInstance*>(getParent())) {
+      parent->setDirty(true);
+    }
   } else {
     if (!anchored && rigidBody->getActivationState()) {
       motionState->getWorldTransform(transform);

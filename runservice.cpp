@@ -10,7 +10,7 @@
 #include "workspace.hpp"
 namespace freeblock {
 INSTANCE_CTOR(RunService, Service) {
-  getDM()->getWorld()->stepped.listen([this] { step(); });
+  getDM()->getWorld()->stepped.listen([this] { _step(); });
 
   infinitePlaneShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(0.0f, NULL,
@@ -45,12 +45,8 @@ void RunService::_step() {
   updateSimulation();
 
   if (state == Running) {
-    ScriptContext* context = getDM()->getRoot()->getService<ScriptContext>();
-    context->step();
-
-    stepped.fire();
-
     getDM()->step();
+    stepped.fire();
   }
 }
 

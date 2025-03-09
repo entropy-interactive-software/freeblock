@@ -367,11 +367,22 @@ glm::vec3& Vector3Bridge::getVector3(lua_State* L, unsigned int idx) {
 
 int ScriptAPI::print(lua_State* L) {
   for (int i = 0; i < lua_gettop(L); i++) {
-    const char* str = luaL_tolstring(L, i, NULL);
+    const char* str = luaL_tolstring(L, i + 1, NULL);
     rdm::Log::printf(rdm::LOG_INFO, "%s", str);
     lua_pop(L, 1);
   }
   return 0;
+}
+
+int ScriptAPI::wait(lua_State* L) {
+  getScriptThread(L).status = ScriptThread::Yielding;
+  return lua_yield(L, 0);
+}
+
+ScriptThread& ScriptAPI::getScriptThread(lua_State* L) {
+  Instance* i = getScriptObj(L);
+  ScriptContext* context = i->getDM()->getRoot()->getService<ScriptContext>();
+  return context->getThread(i->getUUID());
 }
 
 Instance* ScriptAPI::getScriptObj(lua_State* L) {
@@ -390,5 +401,8 @@ void ScriptAPI::add(lua_State* L) {
 
   lua_pushcfunction(L, &ScriptAPI::print);
   lua_setglobal(L, "print");
+
+  lua_pushcfunction(L, &ScriptAPI::wait);
+  lua_setglobal(L, "wait");
 }
 };  // namespace freeblock

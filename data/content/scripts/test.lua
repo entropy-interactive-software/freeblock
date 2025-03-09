@@ -96,5 +96,12 @@ for i = 1, samples do
    local block = Instance.new("BlockInstance", game.Workspace)
    block.Position = (Vector3.new(x, y, z) * 10) + Vector3.new(0, 10, 0)
    block.Size = Vector3.new(1)
-   block.Anchored = false
+   block.Anchored = true
+
+   wait()
+end
+
+local parts = game.Workspace:GetChildren()
+for i = 1, #parts do
+   parts[i].Anchored = false
 end

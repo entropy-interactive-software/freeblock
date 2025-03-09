@@ -1,6 +1,9 @@
 #pragma once
+#include <cstddef>
+
 #include "instance.hpp"
 #include "reflection.hpp"
+#include "script_context.hpp"
 extern "C" {
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
@@ -49,8 +52,10 @@ class Vector3Bridge {
 
 class ScriptAPI {
   static int print(lua_State* l);
+  static int wait(lua_State* l);
 
  public:
+  static ScriptThread& getScriptThread(lua_State* l);
   static Instance* getScriptObj(lua_State* l);
   static void add(lua_State* l);
 };
