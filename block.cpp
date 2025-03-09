@@ -27,12 +27,13 @@ INSTANCE_CTOR_CREATABLE(BlockInstance, PVInstance) {
                                                     collisionShape, inertia);
     rigidBody = new btRigidBody(rbInfo);
     rigidBody->setUserPointer(this);
-  }
 
-  getDM()->getWorld()->getPhysicsWorld()->getWorld()->addRigidBody(rigidBody);
-  id = getDM()->getWorld()->getPhysicsWorld()->physicsStepping.listen(
-      [this] { physicsStep(); });
-  physDirty = true;
+    getDM()->getWorld()->getPhysicsWorld()->getWorld()->addRigidBody(rigidBody);
+    physDirty = true;
+
+    id = getDM()->getWorld()->getPhysicsWorld()->physicsStepping.listen(
+        [this] { physicsStep(); });
+  }
 }
 
 REFLECTION_BEGIN_DESCRIBED(BlockInstance);
