@@ -32,6 +32,7 @@ class Pipeline {
  public:
   Pipeline(rdm::gfx::Engine* engine, DataModel* dm);
 
+  void regenerateAll();
   void render();
 
   ~Pipeline();

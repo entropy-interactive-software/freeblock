@@ -25,7 +25,19 @@ class Property {
   std::string name;
 
  public:
-  enum Type { String, Integer, Bool, Float, Vec3, Vec2, InstanceRef, Function };
+  enum Type {
+    String,
+    Integer,
+    Bool,
+    Float,
+    Vec3,
+    Vec2,
+    InstanceRef,
+    Function,
+    Signal
+  };
+
+  virtual bool isWriteable() { return false; }
 
   const char* getName() const { return name.c_str(); };
   virtual Type getType() = 0;
@@ -84,6 +96,8 @@ class PropertyString : public Property {
   typedef std::function<void(T*, std::string)> Setter;
   typedef std::function<std::string(T*)> Getter;
 
+  virtual bool isWriteable() { return (setter != nullptr); }
+
   PropertyString(std::string name, Setter set, Getter get) {
     this->name = name;
     setter = set;
@@ -111,6 +125,8 @@ class PropertyInt : public Property {
  public:
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
 
   PropertyInt(std::string name, Setter set, Getter get) {
     this->name = name;
@@ -140,6 +156,8 @@ class PropertyBool : public Property {
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
 
+  virtual bool isWriteable() { return (setter != nullptr); }
+
   PropertyBool(std::string name, Setter set, Getter get) {
     this->name = name;
     setter = set;
@@ -167,6 +185,8 @@ class PropertyFloat : public Property {
  public:
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
 
   PropertyFloat(std::string name, Setter set, Getter get) {
     this->name = name;
@@ -196,6 +216,8 @@ class PropertyVec3 : public Property {
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
 
+  virtual bool isWriteable() { return (setter != nullptr); }
+
   PropertyVec3(std::string name, Setter set, Getter get) {
     this->name = name;
     setter = set;
@@ -223,6 +245,8 @@ class PropertyInstance : public Property {
  public:
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
 
   PropertyInstance(std::string name, Setter set, Getter get) {
     this->name = name;

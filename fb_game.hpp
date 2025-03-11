@@ -7,16 +7,11 @@ namespace freeblock {
 class Game : public rdm::Game {
   std::unique_ptr<Pipeline> renderPipeline;
 
-  DataModel* createDM(rdm::World* world);
-
-  glm::mat4 r1;
-  glm::mat4 r2;
   bool editor;
-
-  rdm::gfx::BaseTexture* m_skybox;
 
  public:
   void setEditor(bool b) { editor = b; }
+  void addEntityConstructors(rdm::network::NetworkManager* manager);
 
   virtual void initialize();
   virtual void initializeClient();

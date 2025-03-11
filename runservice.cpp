@@ -6,12 +6,11 @@
 #include "BulletCollision/CollisionShapes/btStaticPlaneShape.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "LinearMath/btScalar.h"
+#include "instance.hpp"
 #include "script_context.hpp"
 #include "workspace.hpp"
 namespace freeblock {
-INSTANCE_CTOR(RunService, Service) {
-  getDM()->getWorld()->stepped.listen([this] { _step(); });
-
+INSTANCE_CTOR_REPLICATABLE(RunService, Service) {
   infinitePlaneShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(0.0f, NULL,
                                                   infinitePlaneShape);

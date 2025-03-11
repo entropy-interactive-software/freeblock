@@ -4,6 +4,8 @@ namespace freeblock {
 class RunService : public Service {
   INSTANCE(RunService, Service);
 
+  friend class DataModelTrackingEntity;
+
   void updateSimulation();
 
   void _step();

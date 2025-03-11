@@ -23,9 +23,15 @@ REFLECTION_FUNCTION(Instance, IsA, &Instance::luaIsA);
 REFLECTION_FUNCTION(Instance, FindFirstChild, &Instance::luaFindFirstChild);
 REFLECTION_END_DESCRIBED();
 
-Instance::Instance(DataModel* dataModel) {
+Instance::Instance(DataModel* dataModel, InstanceUUID uuid) {
   this->dataModel = dataModel;
-  uuid = dataModel->newInstance(this);
+
+  if (uuid.empty()) {
+    this->uuid = dataModel->newInstance(this);
+  } else {
+    this->uuid = uuid;
+    dataModel->newInstanceTracked(this, uuid);
+  }
 
   parent = "nil";
   name = "Instance";

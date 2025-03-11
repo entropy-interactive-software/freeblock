@@ -366,11 +366,13 @@ glm::vec3& Vector3Bridge::getVector3(lua_State* L, unsigned int idx) {
 }
 
 int ScriptAPI::print(lua_State* L) {
+  std::string s;
   for (int i = 0; i < lua_gettop(L); i++) {
     const char* str = luaL_tolstring(L, i + 1, NULL);
-    rdm::Log::printf(rdm::LOG_INFO, "%s", str);
+    s += str + std::string(" ");
     lua_pop(L, 1);
   }
+  rdm::Log::printf(rdm::LOG_INFO, "%s", s.c_str());
   return 0;
 }
 

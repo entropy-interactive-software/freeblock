@@ -10,7 +10,7 @@
 #include "soul.hpp"
 #include "workspace.hpp"
 namespace freeblock {
-INSTANCE_CTOR(PlayerInstance, Instance) {}
+INSTANCE_CTOR_REPLICATABLE(PlayerInstance, Instance) {}
 
 REFLECTION_BEGIN_DESCRIBED(PlayerInstance);
 REFLECTION_PROPERTY_INSTANCE(PlayerInstance, Soul,
@@ -36,4 +36,8 @@ void PlayerInstance::spawnCharacter() {
 
   playerModel->setPrimaryBlock(block);
 }
+
+NetworkPlayerEntity::NetworkPlayerEntity(rdm::network::NetworkManager* manager,
+                                         rdm::network::EntityId id)
+    : rdm::network::Player(manager, id) {}
 }  // namespace freeblock

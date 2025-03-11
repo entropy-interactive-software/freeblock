@@ -3,7 +3,7 @@
 #include "block.hpp"
 #include "instance.hpp"
 namespace freeblock {
-INSTANCE_CTOR(SoulInstance, Instance) {}
+INSTANCE_CTOR_CREATABLE(SoulInstance, Instance) {}
 
 void SoulInstance::step() {
   Instance* _body = getParent()->findFirstChildOfName("Body");

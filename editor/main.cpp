@@ -2,6 +2,7 @@
 #include <settings.hpp>
 
 #include "datamodel.hpp"
+#include "datamodel_entity.hpp"
 #include "fb_game.hpp"
 #include "instance.hpp"
 #include "players.hpp"
@@ -41,8 +42,13 @@ int main(int argc, char** argv) {
   game.setEditor(true);
   game.earlyInit();
   game.getGfxEngine()->renderStepped.listen([&game] {
-    freeblock::DataModel* dm =
-        (freeblock::DataModel*)game.getWorld()->getUser();
+    freeblock::DataModelTrackingEntity* dm_e =
+        (freeblock::DataModelTrackingEntity*)game.getWorld()
+            ->getNetworkManager()
+            ->getEntityById(0);
+    if (!dm_e) return;
+    freeblock::DataModel* dm = dm_e->getDM();
+
     freeblock::PlayersService* players =
         dm->getRoot()->getService<freeblock::PlayersService>();
 

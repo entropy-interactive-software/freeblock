@@ -7,18 +7,34 @@
 #include "reflection.hpp"
 namespace freeblock {
 typedef std::function<Instance*(DataModel*)> InstanceConstructor;
+typedef std::function<Instance*(DataModel*, InstanceUUID)>
+    InstanceRemoteConstructor;
 class InstanceFactory {
   std::map<std::string, InstanceConstructor> constructors;
+  std::map<std::string, InstanceRemoteConstructor> networkConstructors;
 
  public:
   void addConstructor(const char* name, InstanceConstructor c) {
     constructors[name] = c;
   }
 
+  void addNConstructor(const char* name, InstanceRemoteConstructor c) {
+    networkConstructors[name] = c;
+  }
+
   Instance* create(const char* name, DataModel* dm) {
     auto it = constructors.find(name);
     if (it != constructors.end()) {
       return constructors[name](dm);
+    } else {
+      return NULL;
+    }
+  }
+
+  Instance* createRemote(const char* name, InstanceUUID uuid, DataModel* dm) {
+    auto it = networkConstructors.find(name);
+    if (it != networkConstructors.end()) {
+      return networkConstructors[name](dm, uuid);
     } else {
       return NULL;
     }
@@ -32,6 +48,19 @@ class InstanceFactory {
     return s;
   }
 
+  std::vector<std::string> getTrackableInstances() {
+    std::vector<std::string> s;
+    for (auto& con : networkConstructors) {
+      s.push_back(con.first);
+    }
+    return s;
+  }
+
+  bool isTrackable(const char* type) {
+    auto it = networkConstructors.find(type);
+    return it != networkConstructors.end();
+  }
+
   static InstanceFactory* singleton();
 };
 
@@ -40,6 +69,10 @@ class InstanceFactoryEntry {
  public:
   InstanceFactoryEntry(const char* name, InstanceConstructor c) {
     InstanceFactory::singleton()->addConstructor(name, c);
+  }
+
+  InstanceFactoryEntry(const char* name, InstanceRemoteConstructor c) {
+    InstanceFactory::singleton()->addNConstructor(name, c);
   }
 };
 
@@ -65,14 +98,20 @@ class InstanceFactoryEntry {
       return Super::isA(type);                                  \
     }                                                           \
   }                                                             \
-  N(DataModel* dm);                                             \
+  N(DataModel* dm, InstanceUUID uuid = "");                     \
                                                                 \
  private:
-#define INSTANCE_CTOR(N, P) N::N(DataModel* dm) : P(dm)
+#define INSTANCE_CTOR(N, P) N::N(DataModel* dm, InstanceUUID u) : P(dm, u)
+#define INSTANCE_CTOR_REPLICATABLE(N, P)                             \
+  static InstanceFactoryEntry __Net##N(                              \
+      #N, [](DataModel* d, InstanceUUID u) { return new N(d, u); }); \
+  N::N(DataModel* dm, InstanceUUID uuid) : P(dm, uuid)
 #define INSTANCE_CTOR_CREATABLE(N, P)                                       \
+  static InstanceFactoryEntry __Net##N(                                     \
+      #N, [](DataModel* d, InstanceUUID u) { return new N(d, u); });        \
   static InstanceFactoryEntry __##N(#N,                                     \
                                     [](DataModel* d) { return new N(d); }); \
-  N::N(DataModel* dm) : P(dm)
+  N::N(DataModel* dm, InstanceUUID uuid) : P(dm, uuid)
 class Instance : public reflection::Described {
   DESCRIBED;
 
@@ -89,7 +128,7 @@ class Instance : public reflection::Described {
   static int luaFindFirstChild(lua_State* L);
 
  public:
-  Instance(DataModel* dataModel);
+  Instance(DataModel* dataModel, InstanceUUID uuid = "");
   virtual ~Instance();
 
   virtual std::string getClassName() const { return "Instance"; }
@@ -150,6 +189,9 @@ class Instance : public reflection::Described {
   bool isDescendantOf(Instance* instance);
 
   InstanceUUID getUUID() { return uuid; }
+  // NEVER, EVER, CALL THIS!!! DataModel::setInstanceUUID instead
+  void setUUID(InstanceUUID uuid) { this->uuid = uuid; }
+
   Instance* getParent();
   DataModel* getDM() { return dataModel; }
   std::vector<Instance*> getChildren();

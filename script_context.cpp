@@ -11,6 +11,7 @@ extern "C" {
 #include "console.hpp"
 #include "logging.hpp"
 #include "script.hpp"
+#include "workspace.hpp"
 namespace freeblock {
 static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
   (void)ud;
@@ -46,6 +47,9 @@ void ScriptContext::addScript(ScriptInstance* instance) {
   lua_setglobal(L, "script");
   DescribedBridge::pushDescribed(L, getDM()->getRoot());
   lua_setglobal(L, "game");
+  DescribedBridge::pushDescribed(
+      L, getDM()->getRoot()->getService<WorkspaceInstance>());
+  lua_setglobal(L, "workspace");
 }
 
 void ScriptContext::step() {
