@@ -13,5 +13,7 @@ INSTANCE_CTOR(PVInstance, Instance) {
 REFLECTION_BEGIN_DESCRIBED(PVInstance);
 REFLECTION_PROPERTY_VEC3(PVInstance, Position, &PVInstance::getPosition,
                          &PVInstance::setPosition);
+REFLECTION_PROPERTY_MAT3(PVInstance, Basis, &PVInstance::getBasis,
+                         &PVInstance::setBasis);
 REFLECTION_END_DESCRIBED();
 }  // namespace freeblock

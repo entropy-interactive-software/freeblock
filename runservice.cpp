@@ -10,7 +10,7 @@
 #include "script_context.hpp"
 #include "workspace.hpp"
 namespace freeblock {
-INSTANCE_CTOR_REPLICATABLE(RunService, Service) {
+INSTANCE_CTOR_SERVICE(RunService, Service) {
   infinitePlaneShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(0.0f, NULL,
                                                   infinitePlaneShape);

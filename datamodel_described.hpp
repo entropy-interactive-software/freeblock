@@ -10,6 +10,7 @@ class DataModelDescribed : public Service {
   static int luaOpenPlace(lua_State* L);
   static int luaGetCvar(lua_State* L);
   static int luaSetCvar(lua_State* L);
+  static int luaGetService(lua_State* L);
 
  public:
 };

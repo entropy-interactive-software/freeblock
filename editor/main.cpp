@@ -46,8 +46,14 @@ int main(int argc, char** argv) {
         (freeblock::DataModelTrackingEntity*)game.getWorld()
             ->getNetworkManager()
             ->getEntityById(0);
+
+    freeblock::DataModelTrackingEntity* dmS_e =
+        (freeblock::DataModelTrackingEntity*)game.getServerWorld()
+            ->getNetworkManager()
+            ->getEntityById(0);
     if (!dm_e) return;
     freeblock::DataModel* dm = dm_e->getDM();
+    freeblock::DataModel* dmS = dmS_e->getDM();
 
     freeblock::PlayersService* players =
         dm->getRoot()->getService<freeblock::PlayersService>();
@@ -78,8 +84,11 @@ int main(int argc, char** argv) {
 
     ImGui::End();
 
-    ImGui::Begin("Tree");
+    ImGui::Begin("Tree Client");
     instance_tree(dm->getRoot());
+    ImGui::End();
+    ImGui::Begin("Tree Server");
+    instance_tree(dmS->getRoot());
     ImGui::End();
 
     if (selectedInstance) {

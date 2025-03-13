@@ -6,6 +6,7 @@
 #include <glm/trigonometric.hpp>
 
 #include "datamodel.hpp"
+#include "datamodel_described.hpp"
 #include "input.hpp"
 #include "instance.hpp"
 #include "model.hpp"
@@ -189,6 +190,11 @@ DataModelTrackingEntity::DataModelTrackingEntity(net::NetworkManager* manager,
       }
     });
   } else {
+    // EVERY SERVICE must be created or the client will create its own services
+    for (auto service : InstanceFactory::singleton()->getServices()) {
+      InstanceFactory::singleton()->getService(service.c_str(), dm.get());
+    }
+
     dm->loadLegacyMap("map.rbxl");
   }
 }
@@ -199,12 +205,18 @@ void DataModelTrackingEntity::tick() {
 }
 
 enum EntryType {
+  ROOTINSTANCE,
   INSTANCE,
   INSTANCE_PROP,
   STOP,
 };
 
 void DataModelTrackingEntity::serialize(net::BitStream& stream) {
+  std::scoped_lock l(getDM()->getMutex());
+
+  stream.write<EntryType>(ROOTINSTANCE);
+  stream.writeString(getDM()->getRoot()->getUUID());
+
   // INSTANCES
   for (auto [uuid, instance] : dm->instances) {
     bool trackable = InstanceFactory::singleton()->isTrackable(
@@ -237,6 +249,9 @@ void DataModelTrackingEntity::serialize(net::BitStream& stream) {
         case reflection::Property::Vec3:
           stream.write<glm::vec3>(prop.second->getVec3(instance));
           break;
+        case reflection::Property::Mat3:
+          stream.write<glm::mat3>(prop.second->getMat3(instance));
+          break;
         default:
           break;
       }
@@ -248,9 +263,14 @@ void DataModelTrackingEntity::serialize(net::BitStream& stream) {
 void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
   std::scoped_lock l(getDM()->getMutex());
 
+  DataModelDescribed* newDM = new DataModelDescribed(getDM());
+
   bool processing = true;
   while (processing) {
     switch (stream.read<EntryType>()) {
+      case ROOTINSTANCE:
+        dm->setInstanceUUID(newDM->getUUID(), stream.readString());
+        break;
       case INSTANCE:
         try {
           std::string uuid = stream.readString();
@@ -263,10 +283,6 @@ void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
           bool root = stream.read<bool>();
 
           if (root) {
-            dm->setInstanceUUID(dm->getRoot()->getUUID(), uuid);
-            for (auto child : dm->getRoot()->getChildren()) {
-              delete child;
-            }
           } else {
             InstanceFactory::singleton()->createRemote(type.c_str(), uuid,
                                                        dm.get());
@@ -294,6 +310,10 @@ void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
                 break;
               case reflection::Property::InstanceRef: {
                 std::string nuuid = stream.readString();
+                if (nuuid == "nil") {
+                  prop.second->setInstance(instance, NULL);
+                  break;
+                }
                 if (Instance* v = dm->getInstanceByUUID(nuuid)) {
                   prop.second->setInstance(instance, v);
                 } else {
@@ -309,6 +329,9 @@ void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
               case reflection::Property::Vec3: {
                 prop.second->setVec3(instance, stream.read<glm::vec3>());
               } break;
+              case reflection::Property::Mat3:
+                prop.second->setMat3(instance, stream.read<glm::mat3>());
+                break;
               default:
                 break;
             }
@@ -326,6 +349,10 @@ void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
         break;
     }
   }
+
+  Instance* oldRoot = getDM()->root;
+  getDM()->root = newDM;
+  delete oldRoot;
 
   pipeline->regenerateAll();
 }

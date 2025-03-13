@@ -11,34 +11,31 @@ typedef std::function<Instance*(DataModel*, InstanceUUID)>
     InstanceRemoteConstructor;
 class InstanceFactory {
   std::map<std::string, InstanceConstructor> constructors;
+  std::map<std::string, InstanceConstructor> serviceConstructors;
+  std::vector<std::string> services;
   std::map<std::string, InstanceRemoteConstructor> networkConstructors;
 
  public:
   void addConstructor(const char* name, InstanceConstructor c) {
     constructors[name] = c;
   }
+  void addServiceConstructor(const char* name, InstanceConstructor c) {
+    serviceConstructors[name] = c;
+  }
+
+  void addService(std::string name) { services.push_back(name); }
+
+  std::vector<std::string> getServices() { return services; }
 
   void addNConstructor(const char* name, InstanceRemoteConstructor c) {
     networkConstructors[name] = c;
   }
 
-  Instance* create(const char* name, DataModel* dm) {
-    auto it = constructors.find(name);
-    if (it != constructors.end()) {
-      return constructors[name](dm);
-    } else {
-      return NULL;
-    }
-  }
+  Instance* create(const char* name, DataModel* dm);
 
-  Instance* createRemote(const char* name, InstanceUUID uuid, DataModel* dm) {
-    auto it = networkConstructors.find(name);
-    if (it != networkConstructors.end()) {
-      return networkConstructors[name](dm, uuid);
-    } else {
-      return NULL;
-    }
-  }
+  Instance* getService(const char* name, DataModel* dm);
+
+  Instance* createRemote(const char* name, InstanceUUID uuid, DataModel* dm);
 
   std::vector<std::string> getInstances() {
     std::vector<std::string> s;
@@ -67,8 +64,14 @@ class InstanceFactory {
 // for internal use only
 class InstanceFactoryEntry {
  public:
-  InstanceFactoryEntry(const char* name, InstanceConstructor c) {
-    InstanceFactory::singleton()->addConstructor(name, c);
+  InstanceFactoryEntry(const char* name, InstanceConstructor c,
+                       bool service = false) {
+    if (service) {
+      InstanceFactory::singleton()->addService(name);
+      InstanceFactory::singleton()->addServiceConstructor(name, c);
+    } else {
+      InstanceFactory::singleton()->addConstructor(name, c);
+    };
   }
 
   InstanceFactoryEntry(const char* name, InstanceRemoteConstructor c) {
@@ -105,6 +108,12 @@ class InstanceFactoryEntry {
 #define INSTANCE_CTOR_REPLICATABLE(N, P)                             \
   static InstanceFactoryEntry __Net##N(                              \
       #N, [](DataModel* d, InstanceUUID u) { return new N(d, u); }); \
+  N::N(DataModel* dm, InstanceUUID uuid) : P(dm, uuid)
+#define INSTANCE_CTOR_SERVICE(N, P)                                  \
+  static InstanceFactoryEntry __Net##N(                              \
+      #N, [](DataModel* d, InstanceUUID u) { return new N(d, u); }); \
+  static InstanceFactoryEntry __##N(                                 \
+      #N, [](DataModel* d) { return new N(d); }, true);              \
   N::N(DataModel* dm, InstanceUUID uuid) : P(dm, uuid)
 #define INSTANCE_CTOR_CREATABLE(N, P)                                       \
   static InstanceFactoryEntry __Net##N(                                     \

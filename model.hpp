@@ -5,9 +5,20 @@
 namespace freeblock {
 class ModelInstance : public Instance {
   INSTANCE(ModelInstance, Instance);
+  DESCRIBED;
 
   bool dirty;
   InstanceUUID primaryBlock;
+
+  Instance* getPrimaryBlock_R() {
+    return getDM()->getInstanceByUUID<BlockInstance>(primaryBlock);
+  }
+
+  void setPrimaryBlock_R(Instance* block) {
+    if (block && !block->isA("BlockInstance"))
+      throw std::runtime_error("Block is not BlockInstance");
+    primaryBlock = INSTANCE_TOUUID(block);
+  }
 
  public:
   void setDirty(bool d) { dirty = d; };

@@ -23,6 +23,19 @@ int DataModelDescribed::luaOpenPlace(lua_State* L) {
   return 0;
 }
 
+int DataModelDescribed::luaGetService(lua_State* L) {
+  DataModelDescribed* i =
+      dynamic_cast<DataModelDescribed*>(DescribedBridge::getDescribed(L, 1));
+  const char* service = lua_tostring(L, 2);
+
+  Instance* s = InstanceFactory::singleton()->getService(service, i->getDM());
+  if (!s) throw std::runtime_error("Bad service name");
+
+  DescribedBridge::pushDescribed(L, s);
+
+  return 1;
+}
+
 static rdm::CVar lua_enablesettingcvars("lua_enablesettingcvars", "0");
 
 int DataModelDescribed::luaGetCvar(lua_State* L) {

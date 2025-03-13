@@ -3,7 +3,7 @@
 #include "instance.hpp"
 #include "player.hpp"
 namespace freeblock {
-INSTANCE_CTOR_REPLICATABLE(PlayersService, Service) {}
+INSTANCE_CTOR_SERVICE(PlayersService, Service) {}
 
 void PlayersService::createLocalPlayer() {
   PlayerInstance* player = createChild<PlayerInstance>();

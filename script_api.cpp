@@ -114,7 +114,13 @@ int DescribedBridge::newindex(lua_State* L) {
 }
 
 int DescribedBridge::gc(lua_State* L) {
-  // void** ud = (void**)luaL_checkudata(L, 1, "Described");
+  reflection::Described** ud =
+      (reflection::Described**)luaL_checkudata(L, 1, "Described");
+  reflection::Described* d = *ud;
+  d->gcRmReference();
+  if (d->gcGetNumReferences() == 0) {
+    delete (*ud);
+  }
   // rdm::Log::printf(rdm::LOG_ERROR, "gc");
   return 0;
 }
@@ -183,6 +189,7 @@ void DescribedBridge::pushDescribed(lua_State* L,
   reflection::Described** value = (reflection::Described**)lua_newuserdata(
       L, sizeof(reflection::Described*));
   *value = described;
+  (*value)->gcAddReference();
   luaL_getmetatable(L, "Described");
   lua_setmetatable(L, -2);
 }

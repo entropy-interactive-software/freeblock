@@ -12,6 +12,7 @@ namespace freeblock {
 DataModel::DataModel(rdm::World* world) {
   this->world = world;
   root = new DataModelDescribed(this);
+  root->gcAddReference();
 
   RunService* run = root->getService<RunService>();
   run->stop();

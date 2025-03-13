@@ -23,7 +23,7 @@ static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
     return realloc(ptr, nsize);
 }
 
-INSTANCE_CTOR(ScriptContext, Service) {
+INSTANCE_CTOR_SERVICE(ScriptContext, Service) {
   setName("ScriptContext");
   rdm::Log::printf(rdm::LOG_INFO, "%s", LUA_COPYRIGHT);
   globalState = lua_newstate(l_alloc, this);

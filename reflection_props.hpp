@@ -31,6 +31,7 @@ class Property {
     Bool,
     Float,
     Vec3,
+    Mat3,
     Vec2,
     InstanceRef,
     Function,
@@ -68,6 +69,14 @@ class Property {
   }
   virtual void setFloat(Described* described, float value) {
     throw std::runtime_error("No float");
+  }
+
+  virtual glm::mat3 getMat3(Described* described) {
+    throw std::runtime_error("No mat3");
+  }
+
+  virtual void setMat3(Described* described, glm::mat3 str) {
+    throw std::runtime_error("No mat3");
   }
 
   virtual glm::vec3 getVec3(Described* described) {
@@ -206,6 +215,36 @@ class PropertyFloat : public Property {
 };
 
 template <typename T>
+class PropertyMat3 : public Property {
+  typedef glm::mat3 DataType;
+
+  std::function<void(T*, DataType)> setter;
+  std::function<DataType(T*)> getter;
+
+ public:
+  typedef std::function<void(T*, DataType)> Setter;
+  typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
+
+  PropertyMat3(std::string name, Setter set, Getter get) {
+    this->name = name;
+    setter = set;
+    getter = get;
+  }
+
+  virtual Type getType() { return Mat3; }
+
+  virtual DataType getMat3(Described* described) {
+    return getter(dynamic_cast<T*>(described));
+  }
+
+  virtual void setMat3(Described* described, DataType str) {
+    setter(dynamic_cast<T*>(described), str);
+  }
+};
+
+template <typename T>
 class PropertyVec3 : public Property {
   typedef glm::vec3 DataType;
 
@@ -299,6 +338,10 @@ class PropertyFunction : public Property {
 
 #define REFLECTION_PROPERTY_VEC3(T, N, Gt, St)                     \
   static freeblock::reflection::PropertyVec3<T> __##N(#N, St, Gt); \
+  pl[#N] = &__##N;
+
+#define REFLECTION_PROPERTY_MAT3(T, N, Gt, St)                     \
+  static freeblock::reflection::PropertyMat3<T> __##N(#N, St, Gt); \
   pl[#N] = &__##N;
 
 #define REFLECTION_PROPERTY_INSTANCE(T, N, Gt, St)                     \

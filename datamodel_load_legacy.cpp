@@ -79,6 +79,8 @@ static void parseNode(DataModel *dm, Instance *instance,
 }
 
 void DataModel::loadLegacyMap(const char *path) {
+  std::scoped_lock l(getMutex());
+
   rapidxml::file<> file(path);
   rapidxml::xml_document<> doc;
   doc.parse<0>(file.data());
