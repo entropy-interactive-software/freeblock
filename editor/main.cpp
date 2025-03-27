@@ -2,6 +2,7 @@
 #include <settings.hpp>
 
 #include "datamodel.hpp"
+#include "datamodel_entity.hpp"
 #include "fb_game.hpp"
 #include "instance.hpp"
 #include "players.hpp"
@@ -41,8 +42,19 @@ int main(int argc, char** argv) {
   game.setEditor(true);
   game.earlyInit();
   game.getGfxEngine()->renderStepped.listen([&game] {
-    freeblock::DataModel* dm =
-        (freeblock::DataModel*)game.getWorld()->getUser();
+    freeblock::DataModelTrackingEntity* dm_e =
+        (freeblock::DataModelTrackingEntity*)game.getWorld()
+            ->getNetworkManager()
+            ->getEntityById(0);
+
+    freeblock::DataModelTrackingEntity* dmS_e =
+        (freeblock::DataModelTrackingEntity*)game.getServerWorld()
+            ->getNetworkManager()
+            ->getEntityById(0);
+    if (!dm_e) return;
+    freeblock::DataModel* dm = dm_e->getDM();
+    freeblock::DataModel* dmS = dmS_e->getDM();
+
     freeblock::PlayersService* players =
         dm->getRoot()->getService<freeblock::PlayersService>();
 
@@ -72,8 +84,11 @@ int main(int argc, char** argv) {
 
     ImGui::End();
 
-    ImGui::Begin("Tree");
+    ImGui::Begin("Tree Client");
     instance_tree(dm->getRoot());
+    ImGui::End();
+    ImGui::Begin("Tree Server");
+    instance_tree(dmS->getRoot());
     ImGui::End();
 
     if (selectedInstance) {
@@ -119,6 +134,8 @@ int main(int argc, char** argv) {
             ImGui::Text("%s %s", property.second->getName(),
                         instance ? instance->getName().c_str() : "nil");
           } break;
+          case freeblock::reflection::Property::Function:
+            break;
           default:
             ImGui::Text("%s, bad type", property.second->getName());
             break;

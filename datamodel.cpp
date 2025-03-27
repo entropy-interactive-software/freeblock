@@ -12,6 +12,7 @@ namespace freeblock {
 DataModel::DataModel(rdm::World* world) {
   this->world = world;
   root = new DataModelDescribed(this);
+  root->gcAddReference();
 
   RunService* run = root->getService<RunService>();
   run->stop();
@@ -76,6 +77,23 @@ InstanceUUID DataModel::newInstance(Instance* instance) {
   InstanceUUID uuid = generate_uuid_v4();
   instances[uuid] = instance;
   return uuid;
+}
+
+void DataModel::newInstanceTracked(Instance* instance, InstanceUUID uuid) {
+  instances[uuid] = instance;
+}
+
+void DataModel::setInstanceUUID(InstanceUUID old, InstanceUUID newu) {
+  auto it = instances.find(old);
+  if (it != instances.end()) {
+    Instance* i = it->second;
+    instances.erase(old);
+    i->setUUID(newu);
+    rdm::Log::printf(rdm::LOG_DEBUG, "%s -> %s", old.c_str(), newu.c_str());
+    instances[newu] = i;
+  } else {
+    throw std::runtime_error("Non existent uuid");
+  }
 }
 
 Instance* DataModel::getInstanceByUUID(InstanceUUID uuid) {

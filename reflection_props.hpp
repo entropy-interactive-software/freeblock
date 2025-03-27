@@ -25,7 +25,20 @@ class Property {
   std::string name;
 
  public:
-  enum Type { String, Integer, Bool, Float, Vec3, Vec2, InstanceRef, Function };
+  enum Type {
+    String,
+    Integer,
+    Bool,
+    Float,
+    Vec3,
+    Mat3,
+    Vec2,
+    InstanceRef,
+    Function,
+    Signal
+  };
+
+  virtual bool isWriteable() { return false; }
 
   const char* getName() const { return name.c_str(); };
   virtual Type getType() = 0;
@@ -58,6 +71,14 @@ class Property {
     throw std::runtime_error("No float");
   }
 
+  virtual glm::mat3 getMat3(Described* described) {
+    throw std::runtime_error("No mat3");
+  }
+
+  virtual void setMat3(Described* described, glm::mat3 str) {
+    throw std::runtime_error("No mat3");
+  }
+
   virtual glm::vec3 getVec3(Described* described) {
     throw std::runtime_error("No vec3");
   }
@@ -83,6 +104,8 @@ class PropertyString : public Property {
  public:
   typedef std::function<void(T*, std::string)> Setter;
   typedef std::function<std::string(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
 
   PropertyString(std::string name, Setter set, Getter get) {
     this->name = name;
@@ -112,6 +135,8 @@ class PropertyInt : public Property {
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
 
+  virtual bool isWriteable() { return (setter != nullptr); }
+
   PropertyInt(std::string name, Setter set, Getter get) {
     this->name = name;
     setter = set;
@@ -139,6 +164,8 @@ class PropertyBool : public Property {
  public:
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
 
   PropertyBool(std::string name, Setter set, Getter get) {
     this->name = name;
@@ -168,6 +195,8 @@ class PropertyFloat : public Property {
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
 
+  virtual bool isWriteable() { return (setter != nullptr); }
+
   PropertyFloat(std::string name, Setter set, Getter get) {
     this->name = name;
     setter = set;
@@ -186,6 +215,36 @@ class PropertyFloat : public Property {
 };
 
 template <typename T>
+class PropertyMat3 : public Property {
+  typedef glm::mat3 DataType;
+
+  std::function<void(T*, DataType)> setter;
+  std::function<DataType(T*)> getter;
+
+ public:
+  typedef std::function<void(T*, DataType)> Setter;
+  typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
+
+  PropertyMat3(std::string name, Setter set, Getter get) {
+    this->name = name;
+    setter = set;
+    getter = get;
+  }
+
+  virtual Type getType() { return Mat3; }
+
+  virtual DataType getMat3(Described* described) {
+    return getter(dynamic_cast<T*>(described));
+  }
+
+  virtual void setMat3(Described* described, DataType str) {
+    setter(dynamic_cast<T*>(described), str);
+  }
+};
+
+template <typename T>
 class PropertyVec3 : public Property {
   typedef glm::vec3 DataType;
 
@@ -195,6 +254,8 @@ class PropertyVec3 : public Property {
  public:
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
 
   PropertyVec3(std::string name, Setter set, Getter get) {
     this->name = name;
@@ -223,6 +284,8 @@ class PropertyInstance : public Property {
  public:
   typedef std::function<void(T*, DataType)> Setter;
   typedef std::function<DataType(T*)> Getter;
+
+  virtual bool isWriteable() { return (setter != nullptr); }
 
   PropertyInstance(std::string name, Setter set, Getter get) {
     this->name = name;
@@ -275,6 +338,10 @@ class PropertyFunction : public Property {
 
 #define REFLECTION_PROPERTY_VEC3(T, N, Gt, St)                     \
   static freeblock::reflection::PropertyVec3<T> __##N(#N, St, Gt); \
+  pl[#N] = &__##N;
+
+#define REFLECTION_PROPERTY_MAT3(T, N, Gt, St)                     \
+  static freeblock::reflection::PropertyMat3<T> __##N(#N, St, Gt); \
   pl[#N] = &__##N;
 
 #define REFLECTION_PROPERTY_INSTANCE(T, N, Gt, St)                     \

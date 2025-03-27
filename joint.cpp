@@ -51,7 +51,7 @@ void WeldInstance::link() {
   getDM()->getWorld()->getPhysicsWorld()->getWorld()->addConstraint(p2p, true);
 }
 
-INSTANCE_CTOR(JointService, Service) { setName("JointService"); };
+INSTANCE_CTOR_SERVICE(JointService, Service) { setName("JointService"); };
 
 void JointService::buildJoints(ModelInstance* model) {
   getDM()

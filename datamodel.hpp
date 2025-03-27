@@ -4,7 +4,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "network/entity.hpp"
 #include "world.hpp"
 
 namespace freeblock {
@@ -14,9 +13,13 @@ typedef std::string InstanceUUID;
 class DataModelDescribed;
 
 class DataModel {
+  friend class DataModelTrackingEntity;
+
   DataModelDescribed* root;
   rdm::World* world;
   std::unordered_map<InstanceUUID, Instance*> instances;
+
+  std::mutex writeMutex;
 
  public:
   DataModel(rdm::World* world);
@@ -42,14 +45,13 @@ class DataModel {
   void removeInstance(InstanceUUID uuid);
 
   InstanceUUID newInstance(Instance* instance);
+  void newInstanceTracked(Instance* instance, InstanceUUID uuid);
   Instance* getRoot() { return (Instance*)root; }
 
-  void create(const char* name);
-};
+  void setInstanceUUID(InstanceUUID old, InstanceUUID newu);
 
-class DataModelTrackingEntity {
- public:
-  DataModelTrackingEntity(rdm::network::NetworkManager* manager,
-                          rdm::network::EntityId id);
+  void create(const char* name);
+
+  std::mutex& getMutex() { return writeMutex; }
 };
 };  // namespace freeblock

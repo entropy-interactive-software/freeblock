@@ -19,7 +19,15 @@ typedef std::map<std::string, Property*> PropertyList;
  private:
 
 class Described {
+  int references;
+
  public:
+  virtual ~Described() {}
+
+  int gcGetNumReferences() { return references; }
+  void gcAddReference() { references++; };
+  void gcRmReference() { references--; };
+
   virtual std::string getParentClassName() const { return "nil"; }
   virtual std::string getClassName() const { return "Described"; }
 

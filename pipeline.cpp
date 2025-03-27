@@ -325,9 +325,13 @@ void Pipeline::model(ModelInstance* model) {
 }
 
 void Pipeline::render() {
-  WorkspaceInstance* workspace =
-      dataModel->getRoot()->getService<WorkspaceInstance>();
-  model(workspace);
+  {
+    std::scoped_lock l(dataModel->getMutex());
+
+    WorkspaceInstance* workspace =
+        dataModel->getRoot()->getService<WorkspaceInstance>();
+    model(workspace);
+  }
 
   auto mt = engine->getMaterialCache()->getOrLoad("Cluster").value();
   rdm::gfx::BaseProgram* bp = mt->prepareDevice(engine->getDevice(), 0);
@@ -387,5 +391,11 @@ void Pipeline::render() {
     }
   }
   meshesToRender.clear();
+}
+
+void Pipeline::regenerateAll() {
+  for (auto& [uuid, cluster] : clusters) {
+    cluster.dirty = true;
+  }
 }
 }  // namespace freeblock
