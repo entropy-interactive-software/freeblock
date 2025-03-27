@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace freeblock {
+
 struct Http {
   typedef unsigned short int HttpStatus;
 
@@ -21,6 +22,7 @@ struct Http {
   // CURL *curl;
   // CURLcode res;
 
+  static void globalInit();  // std::once_flag thing to call curl_global_init
  public:
   Http(std::string path);
   Http(std::string path,

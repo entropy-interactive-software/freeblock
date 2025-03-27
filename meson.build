@@ -6,6 +6,8 @@ rdm4001_dep = rdm4001_proj.get_variable('rdm4001_dep')
 cc = meson.get_compiler('c')
 m_dep = cc.find_library('m', required : false)
 
+curl_dep = dependency('libcurl')
+
 lua = shared_library('lua',
                      'lua/lapi.c',
                      'lua/lapi.h',
@@ -114,7 +116,9 @@ base = static_library('base',
                       'player.hpp',
                       'soul.cpp',
                       'soul.hpp',
-                      dependencies: rdm4001_dep, link_with: lua
+		      'http.cpp',
+		      'http.hpp',
+                      dependencies: [rdm4001_dep, curl_dep], link_with: lua
                      )
 
 executable('freeblock-editor',

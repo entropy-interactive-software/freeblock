@@ -4,6 +4,7 @@
 #include "block.hpp"
 #include "datamodel.hpp"
 #include "datamodel_entity.hpp"
+#include "http.hpp"
 #include "input.hpp"
 #include "model.hpp"
 #include "network/network.hpp"
@@ -21,6 +22,11 @@ void Game::initialize() {
   rdm::WorldConstructorSettings& settings = getWorldConstructorSettings();
   settings.network = true;
   settings.physics = true;
+
+  Http::globalInit();  // init
+
+  Http* http = new Http("https://example.com/");
+  http->start();
 
   if (editor) {
     startClient();
