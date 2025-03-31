@@ -92,11 +92,31 @@ void BlockInstance::physicsStep() {
   } else {
     if (!anchored && rigidBody->getActivationState()) {
       motionState->getWorldTransform(transform);
-      setPosition(rdm::BulletHelpers::fromVector3(transform.getOrigin()));
-      setBasis(rdm::BulletHelpers::fromMat3(transform.getBasis()));
+
+      getDM()->makeInstanceDirty(getUUID());
+      bool& dv = getDirtyValues();
+      if (dv) {
+        transform.setOrigin(rdm::BulletHelpers::toVector3(getPosition()));
+        transform.setBasis(rdm::BulletHelpers::toMat3(getBasis()));
+
+        motionState->setWorldTransform(transform);
+      } else {
+        setPosition(rdm::BulletHelpers::fromVector3(transform.getOrigin()));
+        setBasis(rdm::BulletHelpers::fromMat3(transform.getBasis()));
+      }
+      dv = false;
       ModelInstance* model = dynamic_cast<ModelInstance*>(getParent());
       if (model) {
         model->setDirty(true);
+      }
+    } else if (anchored) {
+      bool& dv = getDirtyValues();
+      if (dv) {
+        ModelInstance* model = dynamic_cast<ModelInstance*>(getParent());
+        if (model) {
+          model->setDirty(true);
+        }
+        dv = false;
       }
     }
   }

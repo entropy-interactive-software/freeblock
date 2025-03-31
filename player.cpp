@@ -40,4 +40,12 @@ void PlayerInstance::spawnCharacter() {
 NetworkPlayerEntity::NetworkPlayerEntity(rdm::network::NetworkManager* manager,
                                          rdm::network::EntityId id)
     : rdm::network::Player(manager, id) {}
+
+void NetworkPlayerEntity::deserialize(rdm::network::BitStream& stream) {
+  uuid = stream.readString();
+}
+
+void NetworkPlayerEntity::serialize(rdm::network::BitStream& stream) {
+  stream.writeString(uuid);
+}
 }  // namespace freeblock

@@ -1,5 +1,6 @@
 #pragma once
 #include "datamodel.hpp"
+#include "instance.hpp"
 #include "network/entity.hpp"
 #include "pipeline.hpp"
 namespace freeblock {
@@ -10,9 +11,15 @@ class DataModelTrackingEntity : public net::Entity {
   glm::mat4 r1;
   glm::mat4 r2;
   rdm::gfx::BaseTexture* m_skybox;
+  void readDataPacket(net::BitStream& stream);
+  rdm::ClosureId retransEvent;
+
+  void retransData(net::BitStream& stream);
+  void writeInstanceProperties(Instance* instance, net::BitStream& stream);
 
  public:
   DataModelTrackingEntity(net::NetworkManager* manager, net::EntityId id);
+  virtual ~DataModelTrackingEntity();
 
   virtual const char* getTypeName() { return "datamodel"; };
 

@@ -19,7 +19,9 @@ struct ScriptThread {
   } status;
 
   lua_State* state;
-  InstanceUUID uuid;
+  std::string uuid;
+  InstanceUUID instanceUuid;
+  std::string source;
 
   ~ScriptThread();
 };
@@ -30,8 +32,14 @@ class ScriptContext : public Service {
   std::map<InstanceUUID, ScriptThread> threads;
   lua_State* globalState;
 
+  ScriptThread& newThread();
+  void stepThread(ScriptThread& thr);
+
  public:
   void addScript(ScriptInstance* instance);
+
+  void executeScriptFile(std::string remote);
+  void executeScript(std::string source);
   void scriptSourceChange(ScriptInstance* instance);
 
   ScriptThread& getThread(InstanceUUID uuid) {

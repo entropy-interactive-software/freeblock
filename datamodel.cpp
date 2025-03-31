@@ -40,13 +40,21 @@ void DataModel::step() {
 
 void DataModel::removeInstance(InstanceUUID uuid) { instances.erase(uuid); }
 
+void DataModel::makeInstanceDirty(InstanceUUID uuid) {
+  std::scoped_lock lock(dirtyInstanceLock);
+  if (std::find(dirtyInstances.begin(), dirtyInstances.end(), uuid) ==
+      dirtyInstances.end()) {
+    dirtyInstances.push_back(uuid);
+  }
+}
+
 // STOLEN FROM https://stackoverflow.com/a/60198074
 static std::random_device rd;
 static std::mt19937_64 gen(rd());
 static std::uniform_int_distribution<> dis(0, 15);
 static std::uniform_int_distribution<> dis2(8, 11);
 
-std::string generate_uuid_v4() {
+std::string DataModel::generateUUID() {
   std::stringstream ss;
   int i;
   ss << std::hex;
@@ -74,7 +82,7 @@ std::string generate_uuid_v4() {
 }
 
 InstanceUUID DataModel::newInstance(Instance* instance) {
-  InstanceUUID uuid = generate_uuid_v4();
+  InstanceUUID uuid = generateUUID();
   instances[uuid] = instance;
   return uuid;
 }

@@ -1,3 +1,4 @@
+#include <filesystem.hpp>
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
 
@@ -81,9 +82,15 @@ static void parseNode(DataModel *dm, Instance *instance,
 void DataModel::loadLegacyMap(const char *path) {
   std::scoped_lock l(getMutex());
 
-  rapidxml::file<> file(path);
+  auto d = common::FileSystem::singleton()->getFileIO(path, "r");
+  if (!d) throw std::runtime_error("Could not find file");
+
+  size_t sz = d.value()->fileSize();
+  char *data = (char *)malloc(sz + 4);
+  memset(data, 0, sz + 4);
+  d.value()->read(data, sz);
   rapidxml::xml_document<> doc;
-  doc.parse<0>(file.data());
+  doc.parse<rapidxml::parse_full>(data);
 
   rapidxml::xml_node<> *root = doc.first_node("roblox");
   for (rapidxml::xml_node<> *node = root->first_node(); node;

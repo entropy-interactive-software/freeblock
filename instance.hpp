@@ -14,6 +14,7 @@ class InstanceFactory {
   std::map<std::string, InstanceConstructor> serviceConstructors;
   std::vector<std::string> services;
   std::map<std::string, InstanceRemoteConstructor> networkConstructors;
+  bool needsRetransmission;
 
  public:
   void addConstructor(const char* name, InstanceConstructor c) {
@@ -36,6 +37,9 @@ class InstanceFactory {
   Instance* getService(const char* name, DataModel* dm);
 
   Instance* createRemote(const char* name, InstanceUUID uuid, DataModel* dm);
+
+  void setRetransmit(bool b) { needsRetransmission = b; }
+  bool getRetransmit() { return needsRetransmission; }
 
   std::vector<std::string> getInstances() {
     std::vector<std::string> s;

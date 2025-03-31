@@ -9,7 +9,10 @@ class WorkspaceInstance : public ModelInstance {
   bool infinitePlane;
 
  public:
-  void setInfinitePlane(bool b) { infinitePlane = b; };
+  void setInfinitePlane(bool b) {
+    infinitePlane = b;
+    getDM()->makeInstanceDirty(getUUID());
+  };
   bool getInfinitePlane() { return infinitePlane; }
 };
 };  // namespace freeblock
