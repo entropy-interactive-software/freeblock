@@ -15,10 +15,14 @@
 #include "players.hpp"
 #include "reflection_props.hpp"
 #include "runservice.hpp"
+#include "script_context.hpp"
 #include "settings.hpp"
 #include "workspace.hpp"
 
 namespace freeblock {
+void __t(net::NetworkManager* manager, net::CustomEventID id,
+         net::BitStream stream) {}
+
 DataModelTrackingEntity::DataModelTrackingEntity(net::NetworkManager* manager,
                                                  net::EntityId id)
     : net::Entity(manager, id) {
@@ -29,6 +33,10 @@ DataModelTrackingEntity::DataModelTrackingEntity(net::NetworkManager* manager,
   m_skybox = NULL;
 
   if (!getManager()->isBackend()) {
+    auto& signal = manager->getSignal(0x5e41);
+    retransEvent = signal.listen(
+        [this](rdm::network::BitStream& stream) { retransData(stream); });
+
     pipeline.reset(new Pipeline(getGfxEngine(), dm.get()));
     getGfxEngine()->renderStepped.listen([this, dmref] {
       if (!m_skybox) {
@@ -195,13 +203,17 @@ DataModelTrackingEntity::DataModelTrackingEntity(net::NetworkManager* manager,
       InstanceFactory::singleton()->getService(service.c_str(), dm.get());
     }
 
-    dm->loadLegacyMap("map.rbxl");
+    dm->getRoot()->getService<ScriptContext>()->executeScriptFile(
+        "content/scripts/start.lua");
+    // dm->loadLegacyMap("map.rbxl");
   }
 }
 
-void DataModelTrackingEntity::tick() {
-  RunService* run = dm->getRoot()->getService<RunService>();
-  run->_step();
+DataModelTrackingEntity::~DataModelTrackingEntity() {
+  if (!getManager()->isBackend()) {
+    auto& signal = getManager()->getSignal(0x5e41);
+    signal.removeListener(retransEvent);
+  }
 }
 
 enum EntryType {
@@ -210,6 +222,61 @@ enum EntryType {
   INSTANCE_PROP,
   STOP,
 };
+
+void DataModelTrackingEntity::tick() {
+  RunService* run = dm->getRoot()->getService<RunService>();
+  run->_step();
+
+  if (getDM()->isServer()) {
+    auto dirty = dm->getDirtyInstances();
+    if (dirty.size()) {
+      net::BitStream stream;
+      for (auto uuid : dirty) {
+        Instance* instance = dm->getInstanceByUUID(uuid);
+        writeInstanceProperties(instance, stream);
+      }
+      stream.write<EntryType>(STOP);
+      getManager()->sendCustomEvent(0x5e41, stream);
+    }
+  }
+}
+
+void DataModelTrackingEntity::retransData(net::BitStream& stream) {
+  std::scoped_lock l(getDM()->getMutex());
+  readDataPacket(stream);
+  pipeline->regenerateAll();
+}
+
+void DataModelTrackingEntity::writeInstanceProperties(Instance* instance,
+                                                      net::BitStream& stream) {
+  bool trackable = InstanceFactory::singleton()->isTrackable(
+      instance->getClassName().c_str());
+  if (!trackable) return;
+  stream.write<EntryType>(INSTANCE_PROP);
+  stream.writeString(instance->getUUID());
+  auto plist = instance->getProperties();
+  for (auto prop : plist) {
+    if (!prop.second->isWriteable()) continue;
+    stream.writeString(prop.second->getName());
+    switch (prop.second->getType()) {
+      case reflection::Property::String:
+        stream.writeString(prop.second->getString(instance));
+        break;
+      case reflection::Property::InstanceRef:
+        stream.writeString(INSTANCE_TOUUID(prop.second->getInstance(instance)));
+        break;
+      case reflection::Property::Vec3:
+        stream.write<glm::vec3>(prop.second->getVec3(instance));
+        break;
+      case reflection::Property::Mat3:
+        stream.write<glm::mat3>(prop.second->getMat3(instance));
+        break;
+      default:
+        break;
+    }
+  }
+  stream.writeString("");
+}
 
 void DataModelTrackingEntity::serialize(net::BitStream& stream) {
   std::scoped_lock l(getDM()->getMutex());
@@ -222,6 +289,7 @@ void DataModelTrackingEntity::serialize(net::BitStream& stream) {
     bool trackable = InstanceFactory::singleton()->isTrackable(
         instance->getClassName().c_str());
     if (!trackable) continue;
+
     stream.write<EntryType>(INSTANCE);
     stream.writeString(instance->getUUID());
     stream.writeString(instance->getClassName());
@@ -230,46 +298,22 @@ void DataModelTrackingEntity::serialize(net::BitStream& stream) {
 
   // INSTANCE PROPERTIES
   for (auto [uuid, instance] : dm->instances) {
-    bool trackable = InstanceFactory::singleton()->isTrackable(
-        instance->getClassName().c_str());
-    if (!trackable) continue;
-    stream.write<EntryType>(INSTANCE_PROP);
-    stream.writeString(instance->getUUID());
-    auto plist = instance->getProperties();
-    for (auto prop : plist) {
-      if (!prop.second->isWriteable()) continue;
-      switch (prop.second->getType()) {
-        case reflection::Property::String:
-          stream.writeString(prop.second->getString(instance));
-          break;
-        case reflection::Property::InstanceRef:
-          stream.writeString(
-              INSTANCE_TOUUID(prop.second->getInstance(instance)));
-          break;
-        case reflection::Property::Vec3:
-          stream.write<glm::vec3>(prop.second->getVec3(instance));
-          break;
-        case reflection::Property::Mat3:
-          stream.write<glm::mat3>(prop.second->getMat3(instance));
-          break;
-        default:
-          break;
-      }
-    }
+    writeInstanceProperties(instance, stream);
   }
+
   stream.write<EntryType>(STOP);
 }
 
-void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
-  std::scoped_lock l(getDM()->getMutex());
-
-  DataModelDescribed* newDM = new DataModelDescribed(getDM());
+void DataModelTrackingEntity::readDataPacket(net::BitStream& stream) {
+  DataModelDescribed* newDM = (DataModelDescribed*)getDM()->getRoot();
+  bool setupNewDm = false;
 
   bool processing = true;
   while (processing) {
     switch (stream.read<EntryType>()) {
       case ROOTINSTANCE:
-        dm->setInstanceUUID(newDM->getUUID(), stream.readString());
+        newDM = new DataModelDescribed(getDM(), stream.readString());
+        setupNewDm = true;
         break;
       case INSTANCE:
         try {
@@ -302,20 +346,28 @@ void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
             throw std::runtime_error("Invalid instance");
           }
           auto plist = instance->getProperties();
-          for (auto prop : plist) {
-            if (!prop.second->isWriteable()) continue;
-            switch (prop.second->getType()) {
+          while (true) {
+            std::string pname = stream.readString();
+            if (pname.empty()) break;
+            auto prop = plist.find(pname);
+            if (prop == plist.end()) {
+              rdm::Log::printf(rdm::LOG_ERROR, "Read property name %s",
+                               pname.c_str());
+              throw std::runtime_error("Invalid property name");
+            }
+            if (!prop->second->isWriteable()) continue;
+            switch (prop->second->getType()) {
               case reflection::Property::String:
-                prop.second->setString(instance, stream.readString());
+                prop->second->setString(instance, stream.readString());
                 break;
               case reflection::Property::InstanceRef: {
                 std::string nuuid = stream.readString();
                 if (nuuid == "nil") {
-                  prop.second->setInstance(instance, NULL);
+                  prop->second->setInstance(instance, NULL);
                   break;
                 }
                 if (Instance* v = dm->getInstanceByUUID(nuuid)) {
-                  prop.second->setInstance(instance, v);
+                  prop->second->setInstance(instance, v);
                 } else {
                   rdm::Log::printf(
                       rdm::LOG_WARN,
@@ -323,14 +375,14 @@ void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
                       "unknown to the client",
                       instance->getName().c_str(),
                       instance->getClassName().c_str(), uuid.c_str(),
-                      prop.first.c_str(), nuuid.c_str());
+                      prop->first.c_str(), nuuid.c_str());
                 }
               } break;
               case reflection::Property::Vec3: {
-                prop.second->setVec3(instance, stream.read<glm::vec3>());
+                prop->second->setVec3(instance, stream.read<glm::vec3>());
               } break;
               case reflection::Property::Mat3:
-                prop.second->setMat3(instance, stream.read<glm::mat3>());
+                prop->second->setMat3(instance, stream.read<glm::mat3>());
                 break;
               default:
                 break;
@@ -350,9 +402,15 @@ void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
     }
   }
 
-  Instance* oldRoot = getDM()->root;
-  getDM()->root = newDM;
-  delete oldRoot;
+  if (setupNewDm) {
+    getDM()->root = newDM;
+  }
+}
+
+void DataModelTrackingEntity::deserialize(net::BitStream& stream) {
+  std::scoped_lock l(getDM()->getMutex());
+
+  readDataPacket(stream);
 
   pipeline->regenerateAll();
 }

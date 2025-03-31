@@ -2,6 +2,7 @@
 #include "service.hpp"
 namespace freeblock {
 class RunService : public Service {
+  DESCRIBED;
   INSTANCE(RunService, Service);
 
   friend class DataModelTrackingEntity;
@@ -12,6 +13,8 @@ class RunService : public Service {
 
   btCollisionShape* infinitePlaneShape;
   btRigidBody* infinitePlaneObject;
+
+  static int luaStart(lua_State* L);
 
  public:
   virtual ~RunService();

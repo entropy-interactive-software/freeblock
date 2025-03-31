@@ -9,6 +9,13 @@ extern "C" {
 #include "lua/lua.h"
 }
 namespace freeblock {
+#define LUA_SAFECALL(l, f)                \
+  try {                                   \
+    f;                                    \
+  } catch (std::exception & e) {          \
+    return luaL_error(l, "%s", e.what()); \
+  }
+
 class DescribedBridge {
   static int index(lua_State* L);
   static int newindex(lua_State* L);
@@ -52,6 +59,8 @@ class Vector3Bridge {
 
 class ScriptAPI {
   static int print(lua_State* l);
+  static int error(lua_State* l);
+  static int warn(lua_State* l);
   static int wait(lua_State* l);
 
  public:

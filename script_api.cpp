@@ -36,10 +36,12 @@ int DescribedBridge::index(lua_State* L) {
       case reflection::Property::Function: {
         lua_CFunction m =
             *(p->getFunction().target<reflection::LuaFunctionT*>());
-        if (!m)
-          throw std::runtime_error(
+        if (!m) {
+          return luaL_error(
+              L,
               "p->getFunction().target<reflection::LuaFunctionT*> returned "
               "null");
+        }
         lua_pushcfunction(L, m);
       } break;
       case reflection::Property::Bool: {
@@ -49,10 +51,8 @@ int DescribedBridge::index(lua_State* L) {
         Vector3Bridge::pushVector3(L, p->getVec3(object));
       } break;
       default:
-        rdm::Log::printf(rdm::LOG_ERROR, "Attempted access on property %s",
-                         name);
-        throw std::runtime_error(
-            "Invalid access on property (DEVELOPER FIXME)");
+        return luaL_error(L, "Invalid access on property %s (DEVELOPER FIXME)",
+                          name);
         break;
     }
     return 1;
@@ -65,8 +65,7 @@ int DescribedBridge::index(lua_State* L) {
     }
   }
 
-  rdm::Log::printf(rdm::LOG_ERROR, "Attempted access on property %s", name);
-  throw std::runtime_error("Invalid access on property");
+  return luaL_error(L, "Invalid access on property %s", name);
 }
 
 int DescribedBridge::newindex(lua_State* L) {
@@ -90,7 +89,7 @@ int DescribedBridge::newindex(lua_State* L) {
                 dynamic_cast<Instance*>(DescribedBridge::getDescribed(L, 3))) {
           p->setInstance(object, i);
         } else {
-          throw std::runtime_error("Attempt to set to a nil value");
+          return luaL_error(L, "Attempt to set to a nil value");
         }
         break;
       case reflection::Property::Vec3:
@@ -102,15 +101,13 @@ int DescribedBridge::newindex(lua_State* L) {
       default:
         rdm::Log::printf(rdm::LOG_ERROR, "Attempted access on property %s",
                          name);
-        throw std::runtime_error(
-            "Invalid access on property (DEVELOPER FIXME)");
+        return luaL_error(L, "Invalid access on property (DEVELOPER FIXME)");
         break;
     }
     return 0;
   }
 
-  rdm::Log::printf(rdm::LOG_ERROR, "Attempted access on property %s", name);
-  throw std::runtime_error("Invalid access on property");
+  return luaL_error(L, "Invalid access on property %s", name);
 }
 
 int DescribedBridge::gc(lua_State* L) {
@@ -383,6 +380,28 @@ int ScriptAPI::print(lua_State* L) {
   return 0;
 }
 
+int ScriptAPI::error(lua_State* L) {
+  std::string s;
+  for (int i = 0; i < lua_gettop(L); i++) {
+    const char* str = luaL_tolstring(L, i + 1, NULL);
+    s += str + std::string(" ");
+    lua_pop(L, 1);
+  }
+  rdm::Log::printf(rdm::LOG_ERROR, "%s", s.c_str());
+  return 0;
+}
+
+int ScriptAPI::warn(lua_State* L) {
+  std::string s;
+  for (int i = 0; i < lua_gettop(L); i++) {
+    const char* str = luaL_tolstring(L, i + 1, NULL);
+    s += str + std::string(" ");
+    lua_pop(L, 1);
+  }
+  rdm::Log::printf(rdm::LOG_WARN, "%s", s.c_str());
+  return 0;
+}
+
 int ScriptAPI::wait(lua_State* L) {
   getScriptThread(L).status = ScriptThread::Yielding;
   return lua_yield(L, 0);
@@ -402,14 +421,55 @@ Instance* ScriptAPI::getScriptObj(lua_State* L) {
 }
 
 void ScriptAPI::add(lua_State* L) {
-  DescribedBridge::add(L);
-  Vector3Bridge::add(L);
-
   luaL_requiref(L, LUA_MATHLIBNAME, luaopen_math, 1);
   lua_pop(L, 1);
 
+  luaL_requiref(L, LUA_STRLIBNAME, luaopen_string, 1);
+  lua_pop(L, 1);
+
+  luaL_requiref(L, LUA_TABLIBNAME, luaopen_table, 1);
+  lua_pop(L, 1);
+
+  luaL_requiref(L, LUA_UTF8LIBNAME, luaopen_utf8, 1);
+  lua_pop(L, 1);
+
+  luaL_requiref(L, "_G", luaopen_base, 1);
+  lua_pop(L, 1);
+
+  // sanitize lua base lib
+
+  lua_pushnil(L);
+  lua_setglobal(L, "dofile");
+
+  lua_pushnil(L);
+  lua_setglobal(L, "load");
+
+  lua_pushnil(L);
+  lua_setglobal(L, "loadfile");
+
+  lua_pushnil(L);
+  lua_setglobal(L, "dofile");
+
+  lua_pushnil(L);
+  lua_setglobal(L, "print");
+
+  lua_pushnil(L);
+  lua_setglobal(L, "error");
+
+  lua_pushnil(L);
+  lua_setglobal(L, "warn");
+
+  DescribedBridge::add(L);
+  Vector3Bridge::add(L);
+
   lua_pushcfunction(L, &ScriptAPI::print);
   lua_setglobal(L, "print");
+
+  lua_pushcfunction(L, &ScriptAPI::error);
+  lua_setglobal(L, "error");
+
+  lua_pushcfunction(L, &ScriptAPI::warn);
+  lua_setglobal(L, "warn");
 
   lua_pushcfunction(L, &ScriptAPI::wait);
   lua_setglobal(L, "wait");

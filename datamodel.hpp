@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -18,6 +19,9 @@ class DataModel {
   DataModelDescribed* root;
   rdm::World* world;
   std::unordered_map<InstanceUUID, Instance*> instances;
+
+  std::mutex dirtyInstanceLock;
+  std::vector<InstanceUUID> dirtyInstances;
 
   std::mutex writeMutex;
 
@@ -43,6 +47,16 @@ class DataModel {
   }
 
   void removeInstance(InstanceUUID uuid);
+  void makeInstanceDirty(InstanceUUID uuid);
+  std::vector<InstanceUUID> getDirtyInstances() {
+    std::scoped_lock lock(dirtyInstanceLock);
+    if (!dirtyInstances.size()) return {};
+    auto copy = dirtyInstances;
+    dirtyInstances.clear();
+    return copy;
+  }
+
+  static std::string generateUUID();
 
   InstanceUUID newInstance(Instance* instance);
   void newInstanceTracked(Instance* instance, InstanceUUID uuid);

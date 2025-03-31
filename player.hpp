@@ -19,9 +19,20 @@ class PlayerInstance : public Instance {
 };
 
 class NetworkPlayerEntity : public rdm::network::Player {
+  InstanceUUID uuid;
+
  public:
   NetworkPlayerEntity(rdm::network::NetworkManager* manager,
                       rdm::network::EntityId id);
+
+  void setUUID(InstanceUUID uuid) {
+    this->uuid = uuid;
+    getManager()->addPendingUpdate(getEntityId());
+  }
+  InstanceUUID getUUID() { return uuid; }
+
+  virtual void serialize(rdm::network::BitStream& stream);
+  virtual void deserialize(rdm::network::BitStream& stream);
 
   virtual const char* getTypeName() { return "player_tracked"; };
 };

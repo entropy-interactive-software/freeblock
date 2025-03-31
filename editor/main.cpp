@@ -17,19 +17,23 @@ static void instance_tree(freeblock::Instance* instance) {
   ImGui::PushID(instance->getUUID().c_str());
   if (ImGui::TreeNode(
           (instance->getClassName() + " " + instance->getName()).c_str())) {
-    if (selectedInstance != instance)
-      if (ImGui::Button("Select")) {
-        selectedInstance = instance;
+    try {
+      if (selectedInstance != instance)
+        if (ImGui::Button("Select")) {
+          selectedInstance = instance;
+        }
+
+      ImGui::Text("Class: %s", instance->getClassName().c_str());
+      ImGui::Text("UUID: %s", instance->getUUID().c_str());
+
+      auto children = instance->getChildren();
+      for (auto child : children) {
+        instance_tree(child);
       }
 
-    ImGui::Text("Class: %s", instance->getClassName().c_str());
-    ImGui::Text("UUID: %s", instance->getUUID().c_str());
-
-    auto children = instance->getChildren();
-    for (auto child : children) {
-      instance_tree(child);
+    } catch (std::exception& e) {
+      ImGui::Text("Error: %s", e.what());
     }
-
     ImGui::TreePop();
   }
   ImGui::PopID();

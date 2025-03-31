@@ -6,7 +6,11 @@
 #include "BulletCollision/CollisionShapes/btStaticPlaneShape.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "LinearMath/btScalar.h"
+#include "datamodel_described.hpp"
 #include "instance.hpp"
+#include "reflection.hpp"
+#include "reflection_props.hpp"
+#include "script_api.hpp"
 #include "script_context.hpp"
 #include "workspace.hpp"
 namespace freeblock {
@@ -30,13 +34,30 @@ RunService::~RunService() {
   delete infinitePlaneShape;
 }
 
+REFLECTION_BEGIN_DESCRIBED(RunService);
+REFLECTION_FUNCTION(RunService, Start, &RunService::luaStart);
+REFLECTION_END_DESCRIBED();
+
+int RunService::luaStart(lua_State* L) {
+  RunService* r =
+      dynamic_cast<RunService*>(DescribedBridge::getDescribed(L, 1));
+  r->start();
+  return 0;
+}
+
 void RunService::start() {
+  rdm::Log::printf(rdm::LOG_INFO, "Started");
+
   state = Running;
+  getDM()->makeInstanceDirty(getUUID());
+
   updateSimulation();
 }
 
 void RunService::stop() {
   state = Stopped;
+  getDM()->makeInstanceDirty(getUUID());
+
   updateSimulation();
 }
 

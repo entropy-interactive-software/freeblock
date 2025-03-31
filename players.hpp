@@ -14,5 +14,7 @@ class PlayersService : public Service {
   PlayerInstance* getLocalPlayer() {
     return getDM()->getInstanceByUUID<PlayerInstance>(localPlayer);
   }
+
+  virtual void step();
 };
 };  // namespace freeblock
