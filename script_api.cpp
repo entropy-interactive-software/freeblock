@@ -76,6 +76,9 @@ int DescribedBridge::newindex(lua_State* L) {
   auto it = plist.find(name);
   if (it != plist.end()) {
     reflection::Property* p = it->second;
+    if (!p->isWriteable())
+      return luaL_error(L, "Could not set unwritable property");
+
     switch (p->getType()) {
       case reflection::Property::String:
         p->setString(object, lua_tostring(L, 3));
@@ -115,10 +118,6 @@ int DescribedBridge::gc(lua_State* L) {
       (reflection::Described**)luaL_checkudata(L, 1, "Described");
   reflection::Described* d = *ud;
   d->gcRmReference();
-  if (d->gcGetNumReferences() == 0) {
-    delete (*ud);
-  }
-  // rdm::Log::printf(rdm::LOG_ERROR, "gc");
   return 0;
 }
 
@@ -160,12 +159,12 @@ int DescribedBridge::_new(lua_State* L) {
 
   if (lua_gettop(L) == 1) {
     Instance* i = InstanceFactory::singleton()->create(type, script->getDM());
-    if (!i) throw std::runtime_error("Invalid instance");
+    if (!i) luaL_error(L, "Unknown instance of type %s", type);
     pushDescribed(L, i);
   } else if (lua_gettop(L) == 2) {
     Instance* p = dynamic_cast<Instance*>(DescribedBridge::getDescribed(L, 2));
     Instance* i = InstanceFactory::singleton()->create(type, script->getDM());
-    if (!i) throw std::runtime_error("Invalid instance");
+    if (!i) luaL_error(L, "Unknown instance of type %s", type);
     i->setParent(p);
     pushDescribed(L, i);
   } else {

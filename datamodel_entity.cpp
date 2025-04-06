@@ -227,7 +227,7 @@ void DataModelTrackingEntity::tick() {
   RunService* run = dm->getRoot()->getService<RunService>();
   run->_step();
 
-  if (getDM()->isServer()) {
+  if (getDM()->isServer() && getManager()->getPeers().size()) {
     auto dirty = dm->getDirtyInstances();
     if (dirty.size()) {
       net::BitStream stream;

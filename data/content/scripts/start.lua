@@ -1,7 +1,7 @@
 game:GetService("RunService"):Start()
 
 game.Workspace.InfinitePlane = true
-local samples = 500
+local samples = 25
 local phi = math.pi * (math.sqrt(5) - 1)
 for i = 1, samples do
    local y = 1 - (i / (samples - 1)) * 2
@@ -15,11 +15,5 @@ for i = 1, samples do
    block.Size = Vector3.new(1)
    block.Anchored = false
 end
-
    
 print("Created parts")
-
-local parts = game.Workspace:GetChildren()
-for i = 1, #parts do
-   parts[i].Anchored = false
-end

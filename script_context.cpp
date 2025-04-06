@@ -110,6 +110,8 @@ void ScriptContext::stepThread(ScriptThread& th) {
             th.status = ScriptThread::Yielding;
             break;
           case LUA_OK:
+            rdm::Log::printf(rdm::LOG_DEBUG, "Script %s stopped",
+                             th.uuid.c_str());
             th.status = ScriptThread::Stopped;
             break;
           default:
@@ -121,6 +123,7 @@ void ScriptContext::stepThread(ScriptThread& th) {
       } catch (std::exception& e) {
         th.status = ScriptThread::Stopped;
       }
+      lua_gc(th.state, LUA_GCCOLLECT);
       break;
     case ScriptThread::Yielding:
       th.status = ScriptThread::Yielding_PleaseStart;

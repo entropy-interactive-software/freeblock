@@ -33,6 +33,7 @@ class DataModel {
   bool isClient();
 
   void step();
+  void gc();
 
   void loadLegacyMap(const char* path);
 
