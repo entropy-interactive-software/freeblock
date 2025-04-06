@@ -24,6 +24,25 @@ DataModel::DataModel(rdm::World* world) {
 
 DataModel::~DataModel() { delete root; }
 
+void DataModel::gc() {
+  std::vector<InstanceUUID> toRemove;
+  for (auto [uuid, instance] : instances) {
+    if (!instance->getParent() && instance->gcGetNumReferences() == 0) {
+      toRemove.push_back(uuid);
+    }
+  }
+
+  for (auto uuid : toRemove) {
+    Instance* inst = instances[uuid];
+    delete inst;
+    instances.erase(uuid);
+  }
+
+  if (toRemove.size())
+    rdm::Log::printf(rdm::LOG_DEBUG, "Deleted %i instances gc",
+                     toRemove.size());
+}
+
 bool DataModel::isServer() {
   return getWorld()->getNetworkManager()->isBackend();
 }
@@ -36,6 +55,8 @@ void DataModel::step() {
   for (auto& i : instances) {
     i.second->step();
   }
+
+  gc();
 }
 
 void DataModel::removeInstance(InstanceUUID uuid) { instances.erase(uuid); }
